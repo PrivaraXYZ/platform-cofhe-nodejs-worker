@@ -1,0 +1,35 @@
+services:
+  cofhe-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - WORKER_MIN_THREADS=${WORKER_MIN_THREADS:-2}
+      - WORKER_MAX_THREADS=${WORKER_MAX_THREADS:-4}
+      - WORKER_IDLE_TIMEOUT=${WORKER_IDLE_TIMEOUT:-60000}
+      - WORKER_MAX_QUEUE=${WORKER_MAX_QUEUE:-100}
+      - WORKER_TASK_TIMEOUT=${WORKER_TASK_TIMEOUT:-45000}
+      - COFHE_CHAIN_ID=${COFHE_CHAIN_ID:-421614}
+      - COFHE_NETWORK_NAME=${COFHE_NETWORK_NAME:-Arbitrum Sepolia}
+      - COFHE_RPC_URL=${COFHE_RPC_URL:-https://sepolia-rollup.arbitrum.io/rpc}
+      - COFHE_ENV=${COFHE_ENV:-testnet}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 512M
