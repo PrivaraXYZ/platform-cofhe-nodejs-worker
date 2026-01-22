@@ -1,12 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EncryptionTypeDto } from './encrypt-request.dto';
 
-/**
- * Response containing the encrypted value with data and input proof.
- *
- * The `data` is the encrypted ciphertext hash (ctHash).
- * The `inputProof` is cryptographic proof required to verify the encryption.
- */
 export class EncryptedValueResponseDto {
   @ApiProperty({
     description: 'Type of encrypted value',

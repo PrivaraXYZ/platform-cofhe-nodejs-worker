@@ -70,9 +70,9 @@ async function bootstrap() {
   const swaggerDescription = `
 ## Overview
 
-Stateless REST API for **Fully Homomorphic Encryption (FHE)** using [Zama Protocol](https://docs.zama.org/protocol).
+Stateless REST API for **Fully Homomorphic Encryption (FHE)** using [Fhenix CoFHE](https://docs.fhenix.zone/).
 
-This service encrypts values for use in FHE-enabled smart contracts, producing encrypted handles and proofs that can be submitted on-chain.
+This service encrypts values for use in FHE-enabled smart contracts, producing encrypted data and input proofs that can be submitted on-chain.
 
 ## Supported Types
 
@@ -105,7 +105,7 @@ All errors follow [RFC 7807 Problem Details](https://datatracker.ietf.org/doc/ht
     .setVersion('1.0.0')
     .setContact('Privara', 'https://privara.xyz', 'support@privara.xyz')
     .setLicense('MIT', 'https://opensource.org/licenses/MIT')
-    .setExternalDoc('Zama Protocol Documentation', 'https://docs.zama.org/protocol')
+    .setExternalDoc('Fhenix CoFHE Documentation', 'https://docs.fhenix.zone/')
     .addServer(`http://localhost:${port}`, 'Local Development')
     .addTag('Encrypt', 'FHE encryption endpoints for smart contract inputs')
     .addTag('Health', 'Liveness and readiness probes for orchestration')
@@ -115,7 +115,7 @@ All errors follow [RFC 7807 Problem Details](https://datatracker.ietf.org/doc/ht
 
   SwaggerModule.setup('api/docs', app, document, {
     customSiteTitle: 'FHE Worker API',
-    customfavIcon: 'https://zama.ai/favicon.ico',
+    customfavIcon: 'https://www.fhenix.io/favicon.ico',
     customCss: `
       .swagger-ui .topbar { display: none }
       .swagger-ui .info .title { font-size: 2.5em }

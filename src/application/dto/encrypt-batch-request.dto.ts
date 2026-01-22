@@ -15,11 +15,6 @@ import {
   ETHEREUM_ADDRESS_REGEX,
 } from './encrypt-request.dto';
 
-/**
- * Single item in a batch encryption request.
- *
- * Addresses are optional for Fhenix (not required for encryption).
- */
 export class BatchItemDto {
   @ApiProperty({
     description: 'Type of value to encrypt',
@@ -31,7 +26,8 @@ export class BatchItemDto {
   type!: EncryptionTypeDto;
 
   @ApiProperty({
-    description: 'Value to encrypt. String/number for uint types, Ethereum address for eaddress, boolean for ebool.',
+    description:
+      'Value to encrypt. String/number for uint types, Ethereum address for eaddress, boolean for ebool.',
     oneOf: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
     examples: ['1000000', '0xabcdef...', true, 255],
   })
@@ -57,11 +53,6 @@ export class BatchItemDto {
   userAddress?: string;
 }
 
-/**
- * Request to encrypt multiple values in a single batch operation.
- *
- * For Fhenix, addresses are optional at both batch and item level.
- */
 export class EncryptBatchRequestDto {
   @ApiPropertyOptional({
     description: 'Shared contract address for all items (optional for Fhenix)',

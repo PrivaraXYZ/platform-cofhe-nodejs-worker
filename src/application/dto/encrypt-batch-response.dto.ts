@@ -1,15 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EncryptedValueResponseDto } from './encrypted-value-response.dto';
 
-/**
- * Response containing multiple encrypted values from a batch operation.
- *
- * Results are returned in the same order as the input items.
- */
 export class EncryptBatchResponseDto {
   @ApiProperty({
     description:
-      'Array of encrypted values in the same order as input items. Each contains handle, proof, and timing.',
+      'Array of encrypted values in the same order as input items. Each contains data, inputProof, and timing.',
     type: [EncryptedValueResponseDto],
     minItems: 1,
     maxItems: 10,

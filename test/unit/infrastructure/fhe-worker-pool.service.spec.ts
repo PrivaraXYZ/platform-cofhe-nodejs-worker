@@ -250,7 +250,6 @@ describe('FheWorkerPoolService', () => {
 
   describe('encryptBatch', () => {
     it('should encrypt batch when initialized', async () => {
-      // For batch, we need to mock the run function to return an array
       mockRun.mockResolvedValueOnce([
         { type: 'euint64', data: '0xdata', inputProof: '0xinputproof', encryptionTimeMs: 1000 },
         { type: 'ebool', data: '0xdata', inputProof: '0xinputproof', encryptionTimeMs: 1000 },
@@ -325,7 +324,6 @@ describe('FheWorkerPoolService', () => {
 
       const result = await service.encryptUint64(BigInt('18446744073709551615'));
 
-      // Fhenix handles the value - it's up to the worker to validate
       expect(result.ok).toBe(true);
     });
   });

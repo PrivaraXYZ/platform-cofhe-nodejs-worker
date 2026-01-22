@@ -315,7 +315,6 @@ describe('BatchEncryptUseCase', () => {
         expect(result.error).toBe(error);
       }
 
-      // All items are processed in parallel
       expect(encryptUseCase.execute).toHaveBeenCalledTimes(3);
     });
 
@@ -336,7 +335,6 @@ describe('BatchEncryptUseCase', () => {
       });
 
       expect(result.ok).toBe(false);
-      // All items are processed in parallel
       expect(encryptUseCase.execute).toHaveBeenCalledTimes(2);
     });
   });
