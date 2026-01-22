@@ -4,6 +4,8 @@ import { EthereumAddress } from './ethereum-address';
 export interface EncryptedValueJson {
   type: string;
   data: string;
+  securityZone: number;
+  utype: number;
   inputProof: string;
   contractAddress?: string;
   userAddress?: string;
@@ -13,6 +15,8 @@ export class EncryptedValue {
   private constructor(
     public readonly type: EncryptionType,
     public readonly data: string,
+    public readonly securityZone: number,
+    public readonly utype: number,
     public readonly inputProof: string,
     public readonly contractAddress?: EthereumAddress,
     public readonly userAddress?: EthereumAddress,
@@ -21,6 +25,8 @@ export class EncryptedValue {
   static create(
     type: EncryptionTypeValue | string,
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -32,6 +38,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       encType.value,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -40,6 +48,8 @@ export class EncryptedValue {
 
   static createUint8(
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -47,6 +57,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       EncryptionType.UINT8,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -55,6 +67,8 @@ export class EncryptedValue {
 
   static createUint16(
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -62,6 +76,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       EncryptionType.UINT16,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -70,6 +86,8 @@ export class EncryptedValue {
 
   static createUint32(
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -77,6 +95,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       EncryptionType.UINT32,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -85,6 +105,8 @@ export class EncryptedValue {
 
   static createUint64(
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -92,6 +114,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       EncryptionType.UINT64,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -100,6 +124,8 @@ export class EncryptedValue {
 
   static createUint128(
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -107,6 +133,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       EncryptionType.UINT128,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -115,6 +143,8 @@ export class EncryptedValue {
 
   static createUint256(
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -122,6 +152,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       EncryptionType.UINT256,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -130,6 +162,8 @@ export class EncryptedValue {
 
   static createAddress(
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -137,6 +171,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       EncryptionType.ADDRESS,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -145,6 +181,8 @@ export class EncryptedValue {
 
   static createBool(
     data: string,
+    securityZone: number,
+    utype: number,
     inputProof: string,
     contractAddress?: EthereumAddress,
     userAddress?: EthereumAddress,
@@ -152,6 +190,8 @@ export class EncryptedValue {
     return new EncryptedValue(
       EncryptionType.BOOL,
       EncryptedValue.normalizeHex(data),
+      securityZone,
+      utype,
       EncryptedValue.normalizeHex(inputProof),
       contractAddress,
       userAddress,
@@ -170,6 +210,8 @@ export class EncryptedValue {
     return {
       type: this.type.toString(),
       data: this.data,
+      securityZone: this.securityZone,
+      utype: this.utype,
       inputProof: this.inputProof,
       contractAddress: this.contractAddress?.toString(),
       userAddress: this.userAddress?.toString(),

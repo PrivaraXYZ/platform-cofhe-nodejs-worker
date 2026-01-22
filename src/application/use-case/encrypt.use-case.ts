@@ -18,6 +18,8 @@ export interface EncryptInput {
 export interface EncryptOutput {
   type: EncryptionTypeDto;
   data: string;
+  securityZone: number;
+  utype: number;
   inputProof: string;
   contractAddress?: string;
   userAddress?: string;
@@ -50,6 +52,8 @@ export class EncryptUseCase {
     return Ok({
       type: input.type,
       data: encryptedValue.data,
+      securityZone: encryptedValue.securityZone,
+      utype: encryptedValue.utype,
       inputProof: encryptedValue.inputProof,
       contractAddress: encryptedValue.contractAddress?.toString(),
       userAddress: encryptedValue.userAddress?.toString(),

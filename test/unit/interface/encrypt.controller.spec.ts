@@ -17,6 +17,8 @@ describe('EncryptController', () => {
   const mockOutput: EncryptOutput = {
     type: EncryptionTypeDto.UINT64,
     data: '0xdata',
+    securityZone: 0,
+    utype: 5,
     inputProof: '0xinputproof',
     encryptionTimeMs: 1000,
   };

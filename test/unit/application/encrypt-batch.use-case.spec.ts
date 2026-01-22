@@ -11,9 +11,22 @@ describe('BatchEncryptUseCase', () => {
   const contractAddress = '0x1234567890123456789012345678901234567890';
   const userAddress = '0xabcdef0123456789abcdef0123456789abcdef01';
 
+  const UTYPE_MAP: Record<EncryptionTypeDto, number> = {
+    [EncryptionTypeDto.UINT8]: 0,
+    [EncryptionTypeDto.UINT16]: 1,
+    [EncryptionTypeDto.UINT32]: 2,
+    [EncryptionTypeDto.UINT64]: 5,
+    [EncryptionTypeDto.UINT128]: 6,
+    [EncryptionTypeDto.UINT256]: 8,
+    [EncryptionTypeDto.ADDRESS]: 7,
+    [EncryptionTypeDto.BOOL]: 13,
+  };
+
   const createMockEncryptOutput = (type: EncryptionTypeDto): EncryptOutput => ({
     type,
     data: '0xdata',
+    securityZone: 0,
+    utype: UTYPE_MAP[type],
     inputProof: '0xinputproof',
     encryptionTimeMs: 1000,
   });
