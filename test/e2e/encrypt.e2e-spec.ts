@@ -27,10 +27,10 @@ describe('Encrypt Endpoints (e2e)', () => {
 
     const encryptedValue =
       type === 'uint64'
-        ? EncryptedValue.createUint64('0xhandle', '0xproof', contractAddr.value, userAddr.value)
+        ? EncryptedValue.createUint64('0xdata123', '0xinputproof456', contractAddr.value, userAddr.value)
         : type === 'address'
-          ? EncryptedValue.createAddress('0xhandle', '0xproof', contractAddr.value, userAddr.value)
-          : EncryptedValue.createBool('0xhandle', '0xproof', contractAddr.value, userAddr.value);
+          ? EncryptedValue.createAddress('0xdata123', '0xinputproof456', contractAddr.value, userAddr.value)
+          : EncryptedValue.createBool('0xdata123', '0xinputproof456', contractAddr.value, userAddr.value);
 
     return { encryptedValue, encryptionTimeMs: 1000 };
   };
@@ -98,8 +98,8 @@ describe('Encrypt Endpoints (e2e)', () => {
         .expect(200)
         .expect((res: any) => {
           expect(res.body.type).toBe('euint64');
-          expect(res.body.handle).toBe('0xhandle');
-          expect(res.body.proof).toBe('0xproof');
+          expect(res.body.data).toBe('0xdata123');
+          expect(res.body.inputProof).toBe('0xinputproof456');
           expect(res.body.encryptionTimeMs).toBe(1000);
         });
     });
@@ -337,37 +337,30 @@ describe('Encrypt Endpoints (e2e)', () => {
     });
 
     describe('validation errors', () => {
-      it('should return 400 when only contractAddress is provided at batch level', () => {
+      // Note: For Fhenix CoFHE, contractAddress and userAddress are optional
+      // These tests verify that partial addresses work (Fhenix doesn't require them)
+
+      it('should accept batch with only contractAddress (Fhenix allows partial context)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
             contractAddress: validContractAddress,
             items: [{ type: 'euint64', value: '100' }],
           })
-          .expect(400)
-          .expect((res: any) => {
-            expect(res.body.invalidParams[0].reason).toContain(
-              'Both contractAddress and userAddress must be provided together at batch level',
-            );
-          });
+          .expect(200);
       });
 
-      it('should return 400 when only userAddress is provided at batch level', () => {
+      it('should accept batch with only userAddress (Fhenix allows partial context)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
             userAddress: validUserAddress,
             items: [{ type: 'euint64', value: '100' }],
           })
-          .expect(400)
-          .expect((res: any) => {
-            expect(res.body.invalidParams[0].reason).toContain(
-              'Both contractAddress and userAddress must be provided together at batch level',
-            );
-          });
+          .expect(200);
       });
 
-      it('should return 400 when mixing shared and item-level context', () => {
+      it('should accept batch with mixed shared and item-level context (Fhenix is flexible)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
@@ -382,26 +375,16 @@ describe('Encrypt Endpoints (e2e)', () => {
               },
             ],
           })
-          .expect(400)
-          .expect((res: any) => {
-            expect(res.body.invalidParams[0].reason).toContain(
-              'Cannot specify addresses when batch-level addresses are provided',
-            );
-          });
+          .expect(200);
       });
 
-      it('should return 400 when item is missing context', () => {
+      it('should accept batch without context (Fhenix allows no addresses)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
             items: [{ type: 'euint64', value: '100' }],
           })
-          .expect(400)
-          .expect((res: any) => {
-            expect(res.body.invalidParams[0].reason).toContain(
-              'Missing contractAddress and userAddress',
-            );
-          });
+          .expect(200);
       });
 
       it('should return 400 for empty items array', () => {
