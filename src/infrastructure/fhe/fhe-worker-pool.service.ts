@@ -26,6 +26,8 @@ import { WorkerConfig } from '../config/worker.config';
 interface WorkerResult {
   type: string;
   data: string;
+  securityZone: number;
+  utype: number;
   inputProof: string;
   encryptionTimeMs: number;
 }
@@ -171,6 +173,8 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
           encryptedValue: EncryptedValue.create(
             result.type,
             result.data,
+            result.securityZone,
+            result.utype,
             result.inputProof,
             contractAddress,
             userAddress,
@@ -323,6 +327,8 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
       const encryptedValue = EncryptedValue.create(
         type,
         result.data,
+        result.securityZone,
+        result.utype,
         result.inputProof,
         contractAddr,
         userAddr,

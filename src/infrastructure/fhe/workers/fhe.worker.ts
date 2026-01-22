@@ -34,6 +34,8 @@ export interface WorkerConfig {
 export interface EncryptResult {
   type: string;
   data: string;
+  securityZone: number;
+  utype: number;
   inputProof: string;
   encryptionTimeMs: number;
 }
@@ -144,6 +146,8 @@ function formatResult(
   return {
     type,
     data: '0x' + encrypted.ctHash.toString(16).padStart(64, '0'),
+    securityZone: encrypted.securityZone,
+    utype: encrypted.utype,
     inputProof: encrypted.signature,
     encryptionTimeMs,
   };

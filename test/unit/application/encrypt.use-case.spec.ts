@@ -38,35 +38,48 @@ describe('EncryptUseCase', () => {
     fheService = module.get(FHE_SERVICE);
   });
 
+  const UTYPE_MAP = {
+    uint8: 0,
+    uint16: 1,
+    uint32: 2,
+    uint64: 5,
+    uint128: 6,
+    uint256: 8,
+    address: 7,
+    bool: 13,
+  };
+
   const createMockResult = (
     type: 'uint8' | 'uint16' | 'uint32' | 'uint64' | 'uint128' | 'uint256' | 'address' | 'bool',
   ): EncryptionResult => {
     let encryptedValue: EncryptedValue;
+    const securityZone = 0;
+    const utype = UTYPE_MAP[type];
 
     switch (type) {
       case 'uint8':
-        encryptedValue = EncryptedValue.createUint8('0xdata', '0xinputproof');
+        encryptedValue = EncryptedValue.createUint8('0xdata', securityZone, utype, '0xinputproof');
         break;
       case 'uint16':
-        encryptedValue = EncryptedValue.createUint16('0xdata', '0xinputproof');
+        encryptedValue = EncryptedValue.createUint16('0xdata', securityZone, utype, '0xinputproof');
         break;
       case 'uint32':
-        encryptedValue = EncryptedValue.createUint32('0xdata', '0xinputproof');
+        encryptedValue = EncryptedValue.createUint32('0xdata', securityZone, utype, '0xinputproof');
         break;
       case 'uint64':
-        encryptedValue = EncryptedValue.createUint64('0xdata', '0xinputproof');
+        encryptedValue = EncryptedValue.createUint64('0xdata', securityZone, utype, '0xinputproof');
         break;
       case 'uint128':
-        encryptedValue = EncryptedValue.createUint128('0xdata', '0xinputproof');
+        encryptedValue = EncryptedValue.createUint128('0xdata', securityZone, utype, '0xinputproof');
         break;
       case 'uint256':
-        encryptedValue = EncryptedValue.createUint256('0xdata', '0xinputproof');
+        encryptedValue = EncryptedValue.createUint256('0xdata', securityZone, utype, '0xinputproof');
         break;
       case 'address':
-        encryptedValue = EncryptedValue.createAddress('0xdata', '0xinputproof');
+        encryptedValue = EncryptedValue.createAddress('0xdata', securityZone, utype, '0xinputproof');
         break;
       case 'bool':
-        encryptedValue = EncryptedValue.createBool('0xdata', '0xinputproof');
+        encryptedValue = EncryptedValue.createBool('0xdata', securityZone, utype, '0xinputproof');
         break;
     }
 
