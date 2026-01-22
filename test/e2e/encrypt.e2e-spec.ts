@@ -25,12 +25,13 @@ describe('Encrypt Endpoints (e2e)', () => {
 
     if (!contractAddr.ok || !userAddr.ok) throw new Error('Failed to create addresses');
 
+    // Fhenix CoFHE type constants: EUINT64_TFHE=5, EADDRESS_TFHE=7, EBOOL_TFHE=13
     const encryptedValue =
       type === 'uint64'
-        ? EncryptedValue.createUint64('0xdata123', '0xinputproof456', contractAddr.value, userAddr.value)
+        ? EncryptedValue.createUint64('0xdata123', 0, 5, '0xinputproof456', contractAddr.value, userAddr.value)
         : type === 'address'
-          ? EncryptedValue.createAddress('0xdata123', '0xinputproof456', contractAddr.value, userAddr.value)
-          : EncryptedValue.createBool('0xdata123', '0xinputproof456', contractAddr.value, userAddr.value);
+          ? EncryptedValue.createAddress('0xdata123', 0, 7, '0xinputproof456', contractAddr.value, userAddr.value)
+          : EncryptedValue.createBool('0xdata123', 0, 13, '0xinputproof456', contractAddr.value, userAddr.value);
 
     return { encryptedValue, encryptionTimeMs: 1000 };
   };
