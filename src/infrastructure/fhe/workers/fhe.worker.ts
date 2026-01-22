@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any */
 
 const cofheNode = require('cofhejs/node');
 const cofhejs = cofheNode.cofhejs;
@@ -8,7 +7,15 @@ const Encryptable = cofheNode.Encryptable;
 import { JsonRpcProvider } from 'ethers';
 
 export interface EncryptTask {
-  type: 'euint8' | 'euint16' | 'euint32' | 'euint64' | 'euint128' | 'euint256' | 'eaddress' | 'ebool';
+  type:
+    | 'euint8'
+    | 'euint16'
+    | 'euint32'
+    | 'euint64'
+    | 'euint128'
+    | 'euint256'
+    | 'eaddress'
+    | 'ebool';
   value: string | number | boolean;
   config?: WorkerConfig;
 }
@@ -92,7 +99,8 @@ async function doInitialize(config: WorkerConfig): Promise<void> {
     });
 
     if (!result.success) {
-      const errorDetails = result.error?.message || result.error?.toString() || JSON.stringify(result.error);
+      const errorDetails =
+        result.error?.message || result.error?.toString() || JSON.stringify(result.error);
       throw new Error(`CoFHE initialization failed: ${errorDetails}`);
     }
 
@@ -128,7 +136,11 @@ function createEncryptable(type: string, value: string | number | boolean): any 
   }
 }
 
-function formatResult(type: string, encrypted: CoFheInItem, encryptionTimeMs: number): EncryptResult {
+function formatResult(
+  type: string,
+  encrypted: CoFheInItem,
+  encryptionTimeMs: number,
+): EncryptResult {
   return {
     type,
     data: '0x' + encrypted.ctHash.toString(16).padStart(64, '0'),
@@ -137,7 +149,7 @@ function formatResult(type: string, encrypted: CoFheInItem, encryptionTimeMs: nu
   };
 }
 
-export default async function encrypt(task: EncryptTask): Promise<EncryptResult> {
+export async function encrypt(task: EncryptTask): Promise<EncryptResult> {
   const config = task.config || {
     rpcUrl: process.env.COFHE_RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc',
     chainId: parseInt(process.env.COFHE_CHAIN_ID || '421614', 10),
@@ -179,6 +191,6 @@ export async function encryptBatch(task: BatchEncryptTask): Promise<EncryptResul
   const timePerItem = Math.round(totalTime / task.items.length);
 
   return result.data.map((enc: CoFheInItem, index: number) =>
-    formatResult(task.items[index].type, enc, timePerItem)
+    formatResult(task.items[index].type, enc, timePerItem),
   );
 }

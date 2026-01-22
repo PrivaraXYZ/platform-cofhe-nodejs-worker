@@ -6,7 +6,6 @@ import {
   EncryptionResult,
 } from '@domain/fhe/service/fhe.service.interface';
 import { FheDomainError } from '@domain/fhe/error/fhe.error';
-import { EncryptionTypeValue } from '@domain/fhe/value-object/encryption-type';
 import { EncryptionTypeDto } from '../dto/encrypt-request.dto';
 
 export interface EncryptInput {
@@ -65,68 +64,28 @@ export class EncryptUseCase {
 
     switch (input.type) {
       case EncryptionTypeDto.UINT8:
-        return this.fheService.encryptUint8(
-          Number(input.value),
-          contractAddress,
-          userAddress,
-        );
+        return this.fheService.encryptUint8(Number(input.value), contractAddress, userAddress);
 
       case EncryptionTypeDto.UINT16:
-        return this.fheService.encryptUint16(
-          Number(input.value),
-          contractAddress,
-          userAddress,
-        );
+        return this.fheService.encryptUint16(Number(input.value), contractAddress, userAddress);
 
       case EncryptionTypeDto.UINT32:
-        return this.fheService.encryptUint32(
-          BigInt(input.value),
-          contractAddress,
-          userAddress,
-        );
+        return this.fheService.encryptUint32(BigInt(input.value), contractAddress, userAddress);
 
       case EncryptionTypeDto.UINT64:
-        return this.fheService.encryptUint64(
-          BigInt(input.value),
-          contractAddress,
-          userAddress,
-        );
+        return this.fheService.encryptUint64(BigInt(input.value), contractAddress, userAddress);
 
       case EncryptionTypeDto.UINT128:
-        return this.fheService.encryptUint128(
-          BigInt(input.value),
-          contractAddress,
-          userAddress,
-        );
+        return this.fheService.encryptUint128(BigInt(input.value), contractAddress, userAddress);
 
       case EncryptionTypeDto.UINT256:
-        return this.fheService.encryptUint256(
-          BigInt(input.value),
-          contractAddress,
-          userAddress,
-        );
+        return this.fheService.encryptUint256(BigInt(input.value), contractAddress, userAddress);
 
       case EncryptionTypeDto.ADDRESS:
-        return this.fheService.encryptAddress(
-          input.value as string,
-          contractAddress,
-          userAddress,
-        );
+        return this.fheService.encryptAddress(input.value as string, contractAddress, userAddress);
 
       case EncryptionTypeDto.BOOL:
-        return this.fheService.encryptBool(
-          input.value as boolean,
-          contractAddress,
-          userAddress,
-        );
-
-      default:
-        return this.fheService.encrypt({
-          type: input.type as unknown as EncryptionTypeValue,
-          value: input.value,
-          contractAddress,
-          userAddress,
-        });
+        return this.fheService.encryptBool(input.value as boolean, contractAddress, userAddress);
     }
   }
 }

@@ -172,7 +172,9 @@ describe('FheWorkerPoolService', () => {
     it('should encrypt uint128 when initialized', async () => {
       await service.initialize();
 
-      const result = await service.encryptUint128(BigInt('340282366920938463463374607431768211455'));
+      const result = await service.encryptUint128(
+        BigInt('340282366920938463463374607431768211455'),
+      );
 
       expect(result.ok).toBe(true);
     });
@@ -183,9 +185,7 @@ describe('FheWorkerPoolService', () => {
       await service.initialize();
 
       const result = await service.encryptUint256(
-        BigInt(
-          '115792089237316195423570985008687907853269984665640564039457584007913129639935',
-        ),
+        BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'),
       );
 
       expect(result.ok).toBe(true);
@@ -235,9 +235,7 @@ describe('FheWorkerPoolService', () => {
   describe('encrypt (generic)', () => {
     it('should encrypt using generic method', async () => {
       await service.initialize();
-      const { EncryptionTypeValue } = await import(
-        '@domain/fhe/value-object/encryption-type'
-      );
+      const { EncryptionTypeValue } = await import('@domain/fhe/value-object/encryption-type');
 
       const result = await service.encrypt({
         type: EncryptionTypeValue.UINT64,
@@ -256,9 +254,7 @@ describe('FheWorkerPoolService', () => {
       ]);
 
       await service.initialize();
-      const { EncryptionTypeValue } = await import(
-        '@domain/fhe/value-object/encryption-type'
-      );
+      const { EncryptionTypeValue } = await import('@domain/fhe/value-object/encryption-type');
 
       const result = await service.encryptBatch([
         { type: EncryptionTypeValue.UINT64, value: '1000' },

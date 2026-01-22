@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsNotEmpty,
   IsEnum,
   IsOptional,
   registerDecorator,
@@ -83,7 +82,8 @@ export class EncryptRequestDto {
   type!: EncryptionTypeDto;
 
   @ApiProperty({
-    description: 'Value to encrypt (string/number for uint types, Ethereum address for eaddress, boolean for ebool)',
+    description:
+      'Value to encrypt (string/number for uint types, Ethereum address for eaddress, boolean for ebool)',
     oneOf: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
     examples: {
       uint8: { value: 255, summary: 'uint8 value' },
@@ -91,7 +91,10 @@ export class EncryptRequestDto {
       uint32: { value: '4294967295', summary: 'uint32 value as string' },
       uint64: { value: '1000000', summary: 'uint64 value as string' },
       uint128: { value: '340282366920938463463374607431768211455', summary: 'uint128 value' },
-      uint256: { value: '115792089237316195423570985008687907853269984665640564039457584007913129639935', summary: 'uint256 value' },
+      uint256: {
+        value: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
+        summary: 'uint256 value',
+      },
       address: { value: '0x1234567890123456789012345678901234567890', summary: 'Ethereum address' },
       bool: { value: true, summary: 'Boolean value' },
     },

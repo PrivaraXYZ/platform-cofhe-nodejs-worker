@@ -40,7 +40,11 @@ For better type safety, prefer the typed endpoints.
 **Supported Types:** euint8, euint16, euint32, euint64, euint128, euint256, eaddress, ebool`,
   })
   @ApiBody({ type: EncryptRequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   @ApiResponse({ status: 422, description: 'Invalid address or value', type: ErrorResponseDto })
   @ApiResponse({ status: 500, description: 'Encryption failed', type: ErrorResponseDto })
@@ -68,7 +72,11 @@ For better type safety, prefer the typed endpoints.
 **Use Cases:** Small counters, flags, status codes`,
   })
   @ApiBody({ type: EncryptUint8RequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   async encryptUint8(@Body() dto: EncryptUint8RequestDto): Promise<EncryptedValueResponseDto> {
     const result = await this.encryptUseCase.execute({
@@ -92,7 +100,11 @@ For better type safety, prefer the typed endpoints.
 **Use Cases:** Medium-size counters, indexes`,
   })
   @ApiBody({ type: EncryptUint16RequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   async encryptUint16(@Body() dto: EncryptUint16RequestDto): Promise<EncryptedValueResponseDto> {
     const result = await this.encryptUseCase.execute({
@@ -116,7 +128,11 @@ For better type safety, prefer the typed endpoints.
 **Use Cases:** Timestamps, medium-range values`,
   })
   @ApiBody({ type: EncryptUint32RequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   async encryptUint32(@Body() dto: EncryptUint32RequestDto): Promise<EncryptedValueResponseDto> {
     const result = await this.encryptUseCase.execute({
@@ -142,7 +158,11 @@ For better type safety, prefer the typed endpoints.
 **Use Cases:** Token amounts, balances, timestamps`,
   })
   @ApiBody({ type: EncryptUint64RequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   async encryptUint64(@Body() dto: EncryptUint64RequestDto): Promise<EncryptedValueResponseDto> {
     const result = await this.encryptUseCase.execute({
@@ -166,7 +186,11 @@ For better type safety, prefer the typed endpoints.
 **Use Cases:** Very large numeric values, UUIDs`,
   })
   @ApiBody({ type: EncryptUint128RequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   async encryptUint128(@Body() dto: EncryptUint128RequestDto): Promise<EncryptedValueResponseDto> {
     const result = await this.encryptUseCase.execute({
@@ -190,7 +214,11 @@ For better type safety, prefer the typed endpoints.
 **Use Cases:** Hashes, cryptographic values, maximum precision numerics`,
   })
   @ApiBody({ type: EncryptUint256RequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   async encryptUint256(@Body() dto: EncryptUint256RequestDto): Promise<EncryptedValueResponseDto> {
     const result = await this.encryptUseCase.execute({
@@ -216,7 +244,11 @@ For better type safety, prefer the typed endpoints.
 **Use Cases:** Private recipient addresses, hidden counterparties`,
   })
   @ApiBody({ type: EncryptAddressRequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   async encryptAddress(@Body() dto: EncryptAddressRequestDto): Promise<EncryptedValueResponseDto> {
     const result = await this.encryptUseCase.execute({
@@ -240,7 +272,11 @@ For better type safety, prefer the typed endpoints.
 **Use Cases:** Private voting, confidential flags, secret binary choices`,
   })
   @ApiBody({ type: EncryptBoolRequestDto })
-  @ApiResponse({ status: 200, description: 'Value encrypted successfully', type: EncryptedValueResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Value encrypted successfully',
+    type: EncryptedValueResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   async encryptBool(@Body() dto: EncryptBoolRequestDto): Promise<EncryptedValueResponseDto> {
     const result = await this.encryptUseCase.execute({
@@ -264,7 +300,11 @@ For better type safety, prefer the typed endpoints.
 All-or-nothing semantics — if any item fails, the entire batch fails.`,
   })
   @ApiBody({ type: EncryptBatchRequestDto })
-  @ApiResponse({ status: 200, description: 'All values encrypted successfully', type: EncryptBatchResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'All values encrypted successfully',
+    type: EncryptBatchResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error', type: ErrorResponseDto })
   @ApiResponse({ status: 422, description: 'Invalid address or value', type: ErrorResponseDto })
   @ApiResponse({ status: 500, description: 'Encryption failed', type: ErrorResponseDto })

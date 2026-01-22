@@ -114,10 +114,17 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
   }
 
   async encrypt(input: EncryptionInput): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(input.type, input.value, input.contractAddress, input.userAddress);
+    return this.executeEncryption(
+      input.type,
+      input.value,
+      input.contractAddress,
+      input.userAddress,
+    );
   }
 
-  async encryptBatch(inputs: EncryptionInput[]): Promise<Result<EncryptionResult[], FheDomainError>> {
+  async encryptBatch(
+    inputs: EncryptionInput[],
+  ): Promise<Result<EncryptionResult[], FheDomainError>> {
     if (!this.pool) {
       return Err(new FhevmNotInitializedError());
     }
@@ -234,7 +241,12 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
     const addressResult = EthereumAddress.create(address, 'user');
     if (!addressResult.ok) return addressResult;
 
-    return this.executeEncryption(EncryptionTypeValue.ADDRESS, address, contractAddress, userAddress);
+    return this.executeEncryption(
+      EncryptionTypeValue.ADDRESS,
+      address,
+      contractAddress,
+      userAddress,
+    );
   }
 
   async encryptBool(
@@ -245,7 +257,10 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
     return this.executeEncryption(EncryptionTypeValue.BOOL, value, contractAddress, userAddress);
   }
 
-  private normalizeValue(type: EncryptionTypeValue, value: string | number | boolean | bigint): string | number | boolean {
+  private normalizeValue(
+    type: EncryptionTypeValue,
+    value: string | number | boolean | bigint,
+  ): string | number | boolean {
     switch (type) {
       case EncryptionTypeValue.UINT8:
       case EncryptionTypeValue.UINT16:
@@ -293,11 +308,10 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
       const normalizedValue = this.normalizeValue(type, value);
 
       const result = await Promise.race([
-        this.pool.run({
-          type,
-          value: normalizedValue,
-          config: this.workerTaskConfig,
-        }) as Promise<WorkerResult>,
+        this.pool.run(
+          { type, value: normalizedValue, config: this.workerTaskConfig },
+          { name: 'encrypt' },
+        ) as Promise<WorkerResult>,
         new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new EncryptionTimeoutError(this.workerConfig.taskTimeout)),
