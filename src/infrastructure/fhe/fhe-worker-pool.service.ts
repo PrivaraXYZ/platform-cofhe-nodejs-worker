@@ -20,7 +20,6 @@ import {
   UnsupportedEncryptionTypeError,
 } from '@domain/fhe/error/fhe.error';
 import { EncryptedValue } from '@domain/fhe/value-object/encrypted-value';
-import { EthereumAddress } from '@domain/fhe/value-object/ethereum-address';
 import { WorkerConfig } from '../config/worker.config';
 
 interface WorkerResult {
@@ -116,12 +115,7 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
   }
 
   async encrypt(input: EncryptionInput): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(
-      input.type,
-      input.value,
-      input.contractAddress,
-      input.userAddress,
-    );
+    return this.executeEncryption(input.type, input.value, input.userAddress);
   }
 
   async encryptBatch(
@@ -129,6 +123,11 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
   ): Promise<Result<EncryptionResult[], FheDomainError>> {
     if (!this.pool) {
       return Err(new FhevmNotInitializedError());
+    }
+
+    const userAddress = inputs[0]?.userAddress;
+    if (!userAddress) {
+      return Err(new EncryptionError('batch', 'userAddress is required for encryption'));
     }
 
     try {
@@ -139,7 +138,7 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
 
       const results = await Promise.race([
         this.pool.run(
-          { items: tasks, config: this.workerTaskConfig },
+          { items: tasks, userAddress, config: this.workerTaskConfig },
           { name: 'encryptBatch' },
         ) as Promise<WorkerResult[]>,
         new Promise<never>((_, reject) =>
@@ -150,38 +149,16 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
         ),
       ]);
 
-      const encryptionResults: EncryptionResult[] = results.map((result, index) => {
-        const input = inputs[index];
-        let contractAddress: EthereumAddress | undefined;
-        let userAddress: EthereumAddress | undefined;
-
-        if (input.contractAddress) {
-          const contractResult = EthereumAddress.createContract(input.contractAddress);
-          if (contractResult.ok) {
-            contractAddress = contractResult.value;
-          }
-        }
-
-        if (input.userAddress) {
-          const userResult = EthereumAddress.createUser(input.userAddress);
-          if (userResult.ok) {
-            userAddress = userResult.value;
-          }
-        }
-
-        return {
-          encryptedValue: EncryptedValue.create(
-            result.type,
-            result.data,
-            result.securityZone,
-            result.utype,
-            result.inputProof,
-            contractAddress,
-            userAddress,
-          ),
-          encryptionTimeMs: result.encryptionTimeMs,
-        };
-      });
+      const encryptionResults: EncryptionResult[] = results.map((result) => ({
+        encryptedValue: EncryptedValue.create(
+          result.type,
+          result.data,
+          result.securityZone,
+          result.utype,
+          result.inputProof,
+        ),
+        encryptionTimeMs: result.encryptionTimeMs,
+      }));
 
       return Ok(encryptionResults);
     } catch (error) {
@@ -191,74 +168,58 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
 
   async encryptUint8(
     value: number,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(EncryptionTypeValue.UINT8, value, contractAddress, userAddress);
+    return this.executeEncryption(EncryptionTypeValue.UINT8, value, userAddress);
   }
 
   async encryptUint16(
     value: number,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(EncryptionTypeValue.UINT16, value, contractAddress, userAddress);
+    return this.executeEncryption(EncryptionTypeValue.UINT16, value, userAddress);
   }
 
   async encryptUint32(
     value: bigint | number,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(EncryptionTypeValue.UINT32, value, contractAddress, userAddress);
+    return this.executeEncryption(EncryptionTypeValue.UINT32, value, userAddress);
   }
 
   async encryptUint64(
     value: bigint,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(EncryptionTypeValue.UINT64, value, contractAddress, userAddress);
+    return this.executeEncryption(EncryptionTypeValue.UINT64, value, userAddress);
   }
 
   async encryptUint128(
     value: bigint,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(EncryptionTypeValue.UINT128, value, contractAddress, userAddress);
+    return this.executeEncryption(EncryptionTypeValue.UINT128, value, userAddress);
   }
 
   async encryptUint256(
     value: bigint,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(EncryptionTypeValue.UINT256, value, contractAddress, userAddress);
+    return this.executeEncryption(EncryptionTypeValue.UINT256, value, userAddress);
   }
 
   async encryptAddress(
     address: string,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    const addressResult = EthereumAddress.create(address, 'user');
-    if (!addressResult.ok) return addressResult;
-
-    return this.executeEncryption(
-      EncryptionTypeValue.ADDRESS,
-      address,
-      contractAddress,
-      userAddress,
-    );
+    return this.executeEncryption(EncryptionTypeValue.ADDRESS, address, userAddress);
   }
 
   async encryptBool(
     value: boolean,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    return this.executeEncryption(EncryptionTypeValue.BOOL, value, contractAddress, userAddress);
+    return this.executeEncryption(EncryptionTypeValue.BOOL, value, userAddress);
   }
 
   private normalizeValue(
@@ -286,26 +247,14 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
   private async executeEncryption(
     type: EncryptionTypeValue,
     value: string | number | boolean | bigint,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
     if (!this.pool) {
       return Err(new FhevmNotInitializedError());
     }
 
-    let contractAddr: EthereumAddress | undefined;
-    let userAddr: EthereumAddress | undefined;
-
-    if (contractAddress) {
-      const contractResult = EthereumAddress.createContract(contractAddress);
-      if (!contractResult.ok) return contractResult;
-      contractAddr = contractResult.value;
-    }
-
-    if (userAddress) {
-      const userResult = EthereumAddress.createUser(userAddress);
-      if (!userResult.ok) return userResult;
-      userAddr = userResult.value;
+    if (!userAddress) {
+      return Err(new EncryptionError(type, 'userAddress is required for encryption'));
     }
 
     try {
@@ -313,7 +262,7 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
 
       const result = await Promise.race([
         this.pool.run(
-          { type, value: normalizedValue, config: this.workerTaskConfig },
+          { type, value: normalizedValue, userAddress, config: this.workerTaskConfig },
           { name: 'encrypt' },
         ) as Promise<WorkerResult>,
         new Promise<never>((_, reject) =>
@@ -330,8 +279,6 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
         result.securityZone,
         result.utype,
         result.inputProof,
-        contractAddr,
-        userAddr,
       );
 
       return Ok({

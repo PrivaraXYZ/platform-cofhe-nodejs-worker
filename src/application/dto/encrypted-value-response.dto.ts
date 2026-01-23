@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { EncryptionTypeDto } from './encrypt-request.dto';
 
 export class EncryptedValueResponseDto {
@@ -39,20 +39,6 @@ export class EncryptedValueResponseDto {
     pattern: '^0x[a-fA-F0-9]+$',
   })
   inputProof!: string;
-
-  @ApiPropertyOptional({
-    description: 'Contract address used for encryption context (if provided)',
-    example: '0xaBaC0e90FeBC5973D943D36351b9CE04A47bdB41',
-    pattern: '^0x[a-fA-F0-9]{40}$',
-  })
-  contractAddress?: string;
-
-  @ApiPropertyOptional({
-    description: 'User address used for encryption context (if provided)',
-    example: '0x1234567890123456789012345678901234567890',
-    pattern: '^0x[a-fA-F0-9]{40}$',
-  })
-  userAddress?: string;
 
   @ApiProperty({
     description: 'Time taken for encryption in milliseconds',

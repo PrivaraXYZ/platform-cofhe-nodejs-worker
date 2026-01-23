@@ -12,8 +12,7 @@ export interface EncryptionResult {
 export interface EncryptionInput {
   type: EncryptionTypeValue;
   value: string | number | boolean | bigint;
-  contractAddress?: string;
-  userAddress?: string;
+  userAddress: string;
 }
 
 export interface IFheService {
@@ -27,43 +26,35 @@ export interface IFheService {
 
   encryptUint8(
     value: number,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>>;
   encryptUint16(
     value: number,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>>;
   encryptUint32(
     value: bigint | number,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>>;
   encryptUint64(
     value: bigint,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>>;
   encryptUint128(
     value: bigint,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>>;
   encryptUint256(
     value: bigint,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>>;
   encryptAddress(
     address: string,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>>;
   encryptBool(
     value: boolean,
-    contractAddress?: string,
-    userAddress?: string,
+    userAddress: string,
   ): Promise<Result<EncryptionResult, FheDomainError>>;
 }
 
