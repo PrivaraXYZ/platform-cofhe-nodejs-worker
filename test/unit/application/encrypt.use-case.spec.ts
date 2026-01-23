@@ -70,13 +70,28 @@ describe('EncryptUseCase', () => {
         encryptedValue = EncryptedValue.createUint64('0xdata', securityZone, utype, '0xinputproof');
         break;
       case 'uint128':
-        encryptedValue = EncryptedValue.createUint128('0xdata', securityZone, utype, '0xinputproof');
+        encryptedValue = EncryptedValue.createUint128(
+          '0xdata',
+          securityZone,
+          utype,
+          '0xinputproof',
+        );
         break;
       case 'uint256':
-        encryptedValue = EncryptedValue.createUint256('0xdata', securityZone, utype, '0xinputproof');
+        encryptedValue = EncryptedValue.createUint256(
+          '0xdata',
+          securityZone,
+          utype,
+          '0xinputproof',
+        );
         break;
       case 'address':
-        encryptedValue = EncryptedValue.createAddress('0xdata', securityZone, utype, '0xinputproof');
+        encryptedValue = EncryptedValue.createAddress(
+          '0xdata',
+          securityZone,
+          utype,
+          '0xinputproof',
+        );
         break;
       case 'bool':
         encryptedValue = EncryptedValue.createBool('0xdata', securityZone, utype, '0xinputproof');
