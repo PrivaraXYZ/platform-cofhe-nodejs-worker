@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class InvalidParamDto {
   @ApiProperty({
     description: 'Name of the invalid parameter',
-    example: 'contractAddress',
+    example: 'userAddress',
   })
   name!: string;
 

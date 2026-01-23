@@ -54,7 +54,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: dto.type,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -82,7 +81,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: EncryptionTypeDto.UINT8,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -110,7 +108,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: EncryptionTypeDto.UINT16,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -138,7 +135,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: EncryptionTypeDto.UINT32,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -168,7 +164,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: EncryptionTypeDto.UINT64,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -196,7 +191,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: EncryptionTypeDto.UINT128,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -224,7 +218,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: EncryptionTypeDto.UINT256,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -254,7 +247,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: EncryptionTypeDto.ADDRESS,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -282,7 +274,6 @@ For better type safety, prefer the typed endpoints.
     const result = await this.encryptUseCase.execute({
       type: EncryptionTypeDto.BOOL,
       value: dto.value,
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
     });
 
@@ -312,13 +303,10 @@ All-or-nothing semantics — if any item fails, the entire batch fails.`,
   @ApiResponse({ status: 504, description: 'Encryption timeout', type: ErrorResponseDto })
   async encryptBatch(@Body() dto: EncryptBatchRequestDto): Promise<EncryptBatchResponseDto> {
     const result = await this.batchEncryptUseCase.execute({
-      contractAddress: dto.contractAddress,
       userAddress: dto.userAddress,
       items: dto.items.map((item) => ({
         type: item.type,
         value: item.value,
-        contractAddress: item.contractAddress,
-        userAddress: item.userAddress,
       })),
     });
 

@@ -89,7 +89,6 @@ curl -X POST http://localhost:${port}/api/v1/encrypt/uint64 \\
   -H "Content-Type: application/json" \\
   -d '{
     "value": "1000000",
-    "contractAddress": "0xaBaC0e90FeBC5973D943D36351b9CE04A47bdB41",
     "userAddress": "0x1234567890123456789012345678901234567890"
   }'
 \`\`\`

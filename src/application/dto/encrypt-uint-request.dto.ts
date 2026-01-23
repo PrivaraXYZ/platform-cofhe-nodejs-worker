@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsNumber, IsOptional, Matches, Max, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsNumber, Matches, Max, Min } from 'class-validator';
 import { IsEthereumAddress } from './encrypt-request.dto';
 
 export class EncryptUint8RequestDto {
@@ -14,21 +14,12 @@ export class EncryptUint8RequestDto {
   @Max(255)
   value!: number;
 
-  @ApiPropertyOptional({
-    description: 'Contract address for encryption context (optional for Fhenix)',
-    example: '0xaBaC0e90FeBC5973D943D36351b9CE04A47bdB41',
-  })
-  @IsOptional()
-  @IsEthereumAddress()
-  contractAddress?: string;
-
-  @ApiPropertyOptional({
-    description: 'User address for encryption context (optional for Fhenix)',
+  @ApiProperty({
+    description: 'User address for ZK signature binding',
     example: '0x1234567890123456789012345678901234567890',
   })
-  @IsOptional()
   @IsEthereumAddress()
-  userAddress?: string;
+  userAddress!: string;
 }
 
 export class EncryptUint16RequestDto {
@@ -43,21 +34,12 @@ export class EncryptUint16RequestDto {
   @Max(65535)
   value!: number;
 
-  @ApiPropertyOptional({
-    description: 'Contract address for encryption context (optional for Fhenix)',
-    example: '0xaBaC0e90FeBC5973D943D36351b9CE04A47bdB41',
-  })
-  @IsOptional()
-  @IsEthereumAddress()
-  contractAddress?: string;
-
-  @ApiPropertyOptional({
-    description: 'User address for encryption context (optional for Fhenix)',
+  @ApiProperty({
+    description: 'User address for ZK signature binding',
     example: '0x1234567890123456789012345678901234567890',
   })
-  @IsOptional()
   @IsEthereumAddress()
-  userAddress?: string;
+  userAddress!: string;
 }
 
 export class EncryptUint32RequestDto {
@@ -70,21 +52,12 @@ export class EncryptUint32RequestDto {
   @Matches(/^\d+$/, { message: 'Value must be a valid uint32 string' })
   value!: string;
 
-  @ApiPropertyOptional({
-    description: 'Contract address for encryption context (optional for Fhenix)',
-    example: '0xaBaC0e90FeBC5973D943D36351b9CE04A47bdB41',
-  })
-  @IsOptional()
-  @IsEthereumAddress()
-  contractAddress?: string;
-
-  @ApiPropertyOptional({
-    description: 'User address for encryption context (optional for Fhenix)',
+  @ApiProperty({
+    description: 'User address for ZK signature binding',
     example: '0x1234567890123456789012345678901234567890',
   })
-  @IsOptional()
   @IsEthereumAddress()
-  userAddress?: string;
+  userAddress!: string;
 }
 
 export class EncryptUint128RequestDto {
@@ -97,21 +70,12 @@ export class EncryptUint128RequestDto {
   @Matches(/^\d+$/, { message: 'Value must be a valid uint128 string' })
   value!: string;
 
-  @ApiPropertyOptional({
-    description: 'Contract address for encryption context (optional for Fhenix)',
-    example: '0xaBaC0e90FeBC5973D943D36351b9CE04A47bdB41',
-  })
-  @IsOptional()
-  @IsEthereumAddress()
-  contractAddress?: string;
-
-  @ApiPropertyOptional({
-    description: 'User address for encryption context (optional for Fhenix)',
+  @ApiProperty({
+    description: 'User address for ZK signature binding',
     example: '0x1234567890123456789012345678901234567890',
   })
-  @IsOptional()
   @IsEthereumAddress()
-  userAddress?: string;
+  userAddress!: string;
 }
 
 export class EncryptUint256RequestDto {
@@ -124,19 +88,10 @@ export class EncryptUint256RequestDto {
   @Matches(/^\d+$/, { message: 'Value must be a valid uint256 string' })
   value!: string;
 
-  @ApiPropertyOptional({
-    description: 'Contract address for encryption context (optional for Fhenix)',
-    example: '0xaBaC0e90FeBC5973D943D36351b9CE04A47bdB41',
-  })
-  @IsOptional()
-  @IsEthereumAddress()
-  contractAddress?: string;
-
-  @ApiPropertyOptional({
-    description: 'User address for encryption context (optional for Fhenix)',
+  @ApiProperty({
+    description: 'User address for ZK signature binding',
     example: '0x1234567890123456789012345678901234567890',
   })
-  @IsOptional()
   @IsEthereumAddress()
-  userAddress?: string;
+  userAddress!: string;
 }

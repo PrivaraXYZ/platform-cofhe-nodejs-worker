@@ -7,13 +7,10 @@ import { EncryptUseCase, EncryptOutput } from './encrypt.use-case';
 export interface BatchItem {
   type: EncryptionTypeDto;
   value: string | number | boolean;
-  contractAddress?: string;
-  userAddress?: string;
 }
 
 export interface BatchEncryptInput {
-  contractAddress?: string;
-  userAddress?: string;
+  userAddress: string;
   items: BatchItem[];
 }
 
@@ -65,14 +62,12 @@ export class BatchEncryptUseCase {
   private normalizeItems(input: BatchEncryptInput): Array<{
     type: EncryptionTypeDto;
     value: string | number | boolean;
-    contractAddress?: string;
-    userAddress?: string;
+    userAddress: string;
   }> {
     return input.items.map((item) => ({
       type: item.type,
       value: item.value,
-      contractAddress: item.contractAddress || input.contractAddress,
-      userAddress: item.userAddress || input.userAddress,
+      userAddress: input.userAddress,
     }));
   }
 }

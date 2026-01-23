@@ -11,8 +11,7 @@ import { EncryptionTypeDto } from '../dto/encrypt-request.dto';
 export interface EncryptInput {
   type: EncryptionTypeDto;
   value: string | number | boolean;
-  contractAddress?: string;
-  userAddress?: string;
+  userAddress: string;
 }
 
 export interface EncryptOutput {
@@ -21,8 +20,6 @@ export interface EncryptOutput {
   securityZone: number;
   utype: number;
   inputProof: string;
-  contractAddress?: string;
-  userAddress?: string;
   encryptionTimeMs: number;
 }
 
@@ -33,10 +30,8 @@ export class EncryptUseCase {
   constructor(@Inject(FHE_SERVICE) private readonly fheService: IFheService) {}
 
   async execute(input: EncryptInput): Promise<Result<EncryptOutput, FheDomainError>> {
-    const contractShort = input.contractAddress
-      ? input.contractAddress.slice(0, 10) + '...' + input.contractAddress.slice(-4)
-      : 'none';
-    this.logger.debug(`Encrypting ${input.type} for contract=${contractShort}`);
+    const userShort = input.userAddress.slice(0, 10) + '...' + input.userAddress.slice(-4);
+    this.logger.debug(`Encrypting ${input.type} for user=${userShort}`);
 
     const result = await this.performEncryption(input);
 
@@ -55,8 +50,6 @@ export class EncryptUseCase {
       securityZone: encryptedValue.securityZone,
       utype: encryptedValue.utype,
       inputProof: encryptedValue.inputProof,
-      contractAddress: encryptedValue.contractAddress?.toString(),
-      userAddress: encryptedValue.userAddress?.toString(),
       encryptionTimeMs: result.value.encryptionTimeMs,
     });
   }
@@ -64,32 +57,32 @@ export class EncryptUseCase {
   private async performEncryption(
     input: EncryptInput,
   ): Promise<Result<EncryptionResult, FheDomainError>> {
-    const { contractAddress, userAddress } = input;
+    const { userAddress } = input;
 
     switch (input.type) {
       case EncryptionTypeDto.UINT8:
-        return this.fheService.encryptUint8(Number(input.value), contractAddress, userAddress);
+        return this.fheService.encryptUint8(Number(input.value), userAddress);
 
       case EncryptionTypeDto.UINT16:
-        return this.fheService.encryptUint16(Number(input.value), contractAddress, userAddress);
+        return this.fheService.encryptUint16(Number(input.value), userAddress);
 
       case EncryptionTypeDto.UINT32:
-        return this.fheService.encryptUint32(BigInt(input.value), contractAddress, userAddress);
+        return this.fheService.encryptUint32(BigInt(input.value), userAddress);
 
       case EncryptionTypeDto.UINT64:
-        return this.fheService.encryptUint64(BigInt(input.value), contractAddress, userAddress);
+        return this.fheService.encryptUint64(BigInt(input.value), userAddress);
 
       case EncryptionTypeDto.UINT128:
-        return this.fheService.encryptUint128(BigInt(input.value), contractAddress, userAddress);
+        return this.fheService.encryptUint128(BigInt(input.value), userAddress);
 
       case EncryptionTypeDto.UINT256:
-        return this.fheService.encryptUint256(BigInt(input.value), contractAddress, userAddress);
+        return this.fheService.encryptUint256(BigInt(input.value), userAddress);
 
       case EncryptionTypeDto.ADDRESS:
-        return this.fheService.encryptAddress(input.value as string, contractAddress, userAddress);
+        return this.fheService.encryptAddress(input.value as string, userAddress);
 
       case EncryptionTypeDto.BOOL:
-        return this.fheService.encryptBool(input.value as boolean, contractAddress, userAddress);
+        return this.fheService.encryptBool(input.value as boolean, userAddress);
     }
   }
 }
