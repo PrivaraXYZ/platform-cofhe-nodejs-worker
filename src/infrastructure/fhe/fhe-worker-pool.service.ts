@@ -131,6 +131,12 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
       return Err(new FhevmNotInitializedError());
     }
 
+    // All inputs must have the same userAddress for batch encryption
+    const userAddress = inputs[0]?.userAddress;
+    if (!userAddress) {
+      return Err(new EncryptionError('batch', 'userAddress is required for encryption'));
+    }
+
     try {
       const tasks = inputs.map((input) => ({
         type: input.type,
@@ -139,7 +145,7 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
 
       const results = await Promise.race([
         this.pool.run(
-          { items: tasks, config: this.workerTaskConfig },
+          { items: tasks, userAddress, config: this.workerTaskConfig },
           { name: 'encryptBatch' },
         ) as Promise<WorkerResult[]>,
         new Promise<never>((_, reject) =>
@@ -302,18 +308,20 @@ export class FheWorkerPoolService implements IFheService, OnModuleInit, OnModule
       contractAddr = contractResult.value;
     }
 
-    if (userAddress) {
-      const userResult = EthereumAddress.createUser(userAddress);
-      if (!userResult.ok) return userResult;
-      userAddr = userResult.value;
+    if (!userAddress) {
+      return Err(new EncryptionError(type, 'userAddress is required for encryption'));
     }
+
+    const userResult = EthereumAddress.createUser(userAddress);
+    if (!userResult.ok) return userResult;
+    userAddr = userResult.value;
 
     try {
       const normalizedValue = this.normalizeValue(type, value);
 
       const result = await Promise.race([
         this.pool.run(
-          { type, value: normalizedValue, config: this.workerTaskConfig },
+          { type, value: normalizedValue, userAddress, config: this.workerTaskConfig },
           { name: 'encrypt' },
         ) as Promise<WorkerResult>,
         new Promise<never>((_, reject) =>

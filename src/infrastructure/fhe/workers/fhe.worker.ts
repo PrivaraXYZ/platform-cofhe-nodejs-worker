@@ -17,11 +17,13 @@ export interface EncryptTask {
     | 'eaddress'
     | 'ebool';
   value: string | number | boolean;
+  userAddress: string;
   config?: WorkerConfig;
 }
 
 export interface BatchEncryptTask {
-  items: EncryptTask[];
+  items: Omit<EncryptTask, 'userAddress' | 'config'>[];
+  userAddress: string;
   config?: WorkerConfig;
 }
 
@@ -50,8 +52,7 @@ interface CoFheInItem {
 let initialized = false;
 let initPromise: Promise<void> | null = null;
 let currentConfig: WorkerConfig | null = null;
-
-const DUMMY_ADDRESS = '0x0000000000000000000000000000000000000001';
+let currentUserAddress: string | null = null;
 
 function createReadOnlySigner(address: string, ethersProvider: JsonRpcProvider) {
   const provider = {
@@ -72,26 +73,30 @@ function createReadOnlySigner(address: string, ethersProvider: JsonRpcProvider) 
   };
 }
 
-async function ensureInitialized(config: WorkerConfig): Promise<void> {
-  if (initialized && currentConfig?.rpcUrl === config.rpcUrl) {
+async function ensureInitialized(config: WorkerConfig, userAddress: string): Promise<void> {
+  const configMatches = currentConfig?.rpcUrl === config.rpcUrl;
+  const userMatches = currentUserAddress === userAddress.toLowerCase();
+
+  if (initialized && configMatches && userMatches) {
     return;
   }
 
   if (initPromise) {
     await initPromise;
-    if (initialized && currentConfig?.rpcUrl === config.rpcUrl) {
+    if (initialized && configMatches && userMatches) {
       return;
     }
   }
 
-  initPromise = doInitialize(config);
+  initPromise = doInitialize(config, userAddress);
   await initPromise;
 }
 
-async function doInitialize(config: WorkerConfig): Promise<void> {
+async function doInitialize(config: WorkerConfig, userAddress: string): Promise<void> {
   try {
     const provider = new JsonRpcProvider(config.rpcUrl);
-    const readOnlySigner = createReadOnlySigner(DUMMY_ADDRESS, provider);
+    const normalizedUserAddress = userAddress.toLowerCase();
+    const readOnlySigner = createReadOnlySigner(normalizedUserAddress, provider);
 
     const result = await cofhejs.initializeWithEthers({
       ethersProvider: provider,
@@ -108,6 +113,7 @@ async function doInitialize(config: WorkerConfig): Promise<void> {
 
     initialized = true;
     currentConfig = config;
+    currentUserAddress = normalizedUserAddress;
   } catch (error: any) {
     initPromise = null;
     const errorMessage = error?.message || error?.toString() || JSON.stringify(error);
@@ -154,13 +160,17 @@ function formatResult(
 }
 
 export async function encrypt(task: EncryptTask): Promise<EncryptResult> {
+  if (!task.userAddress) {
+    throw new Error('userAddress is required for encryption');
+  }
+
   const config = task.config || {
     rpcUrl: process.env.COFHE_RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc',
     chainId: parseInt(process.env.COFHE_CHAIN_ID || '421614', 10),
     environment: (process.env.COFHE_ENV as 'mock' | 'testnet') || 'testnet',
   };
 
-  await ensureInitialized(config);
+  await ensureInitialized(config, task.userAddress);
 
   const startTime = Date.now();
   const encryptable = createEncryptable(task.type, task.value);
@@ -175,13 +185,17 @@ export async function encrypt(task: EncryptTask): Promise<EncryptResult> {
 }
 
 export async function encryptBatch(task: BatchEncryptTask): Promise<EncryptResult[]> {
+  if (!task.userAddress) {
+    throw new Error('userAddress is required for batch encryption');
+  }
+
   const config = task.config || {
     rpcUrl: process.env.COFHE_RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc',
     chainId: parseInt(process.env.COFHE_CHAIN_ID || '421614', 10),
     environment: (process.env.COFHE_ENV as 'mock' | 'testnet') || 'testnet',
   };
 
-  await ensureInitialized(config);
+  await ensureInitialized(config, task.userAddress);
 
   const startTime = Date.now();
   const encryptables = task.items.map((item) => createEncryptable(item.type, item.value));
