@@ -9,50 +9,22 @@ import {
   EncryptionResult,
 } from '@domain/fhe/service/fhe.service.interface';
 import { EncryptedValue } from '@domain/fhe/value-object/encrypted-value';
-import { EthereumAddress } from '@domain/fhe/value-object/ethereum-address';
 import { FhevmNotInitializedError } from '@domain/fhe/error/fhe.error';
 import { GlobalExceptionFilter } from '@interface/http/filter/global-exception.filter';
 
 describe('Encrypt Endpoints (e2e)', () => {
   let app: INestApplication;
 
-  const validContractAddress = '0x1234567890123456789012345678901234567890';
   const validUserAddress = '0xabcdef0123456789abcdef0123456789abcdef01';
 
   const createMockResult = (type: 'uint64' | 'address' | 'bool'): EncryptionResult => {
-    const contractAddr = EthereumAddress.createContract(validContractAddress);
-    const userAddr = EthereumAddress.createUser(validUserAddress);
-
-    if (!contractAddr.ok || !userAddr.ok) throw new Error('Failed to create addresses');
-
     // Fhenix CoFHE type constants: EUINT64_TFHE=5, EADDRESS_TFHE=7, EBOOL_TFHE=13
     const encryptedValue =
       type === 'uint64'
-        ? EncryptedValue.createUint64(
-            '0xdata123',
-            0,
-            5,
-            '0xinputproof456',
-            contractAddr.value,
-            userAddr.value,
-          )
+        ? EncryptedValue.createUint64('0xdata123', 0, 5, '0xinputproof456')
         : type === 'address'
-          ? EncryptedValue.createAddress(
-              '0xdata123',
-              0,
-              7,
-              '0xinputproof456',
-              contractAddr.value,
-              userAddr.value,
-            )
-          : EncryptedValue.createBool(
-              '0xdata123',
-              0,
-              13,
-              '0xinputproof456',
-              contractAddr.value,
-              userAddr.value,
-            );
+          ? EncryptedValue.createAddress('0xdata123', 0, 7, '0xinputproof456')
+          : EncryptedValue.createBool('0xdata123', 0, 13, '0xinputproof456');
 
     return { encryptedValue, encryptionTimeMs: 1000 };
   };
@@ -114,7 +86,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .send({
           type: 'euint64',
           value: '1000000',
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(200)
@@ -132,7 +103,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .send({
           type: 'eaddress',
           value: validUserAddress,
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(200)
@@ -147,7 +117,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .send({
           type: 'ebool',
           value: true,
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(200)
@@ -162,7 +131,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .send({
           type: 'invalid',
           value: '1000',
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(400)
@@ -171,14 +139,23 @@ describe('Encrypt Endpoints (e2e)', () => {
         });
     });
 
-    it('should return 400 for invalid contract address', () => {
+    it('should return 400 for missing userAddress', () => {
       return request(app.getHttpServer())
         .post('/api/v1/encrypt')
         .send({
           type: 'euint64',
           value: '1000',
-          contractAddress: 'invalid',
-          userAddress: validUserAddress,
+        })
+        .expect(400);
+    });
+
+    it('should return 400 for invalid userAddress', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/encrypt')
+        .send({
+          type: 'euint64',
+          value: '1000',
+          userAddress: 'invalid',
         })
         .expect(400);
     });
@@ -190,7 +167,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .post('/api/v1/encrypt/uint64')
         .send({
           value: '1000000',
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(200)
@@ -204,7 +180,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .post('/api/v1/encrypt/uint64')
         .send({
           value: 'abc',
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(400);
@@ -217,7 +192,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .post('/api/v1/encrypt/address')
         .send({
           value: validUserAddress,
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(200)
@@ -231,7 +205,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .post('/api/v1/encrypt/address')
         .send({
           value: 'invalid',
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(400);
@@ -244,7 +217,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .post('/api/v1/encrypt/bool')
         .send({
           value: true,
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(200)
@@ -258,7 +230,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .post('/api/v1/encrypt/bool')
         .send({
           value: false,
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(200);
@@ -274,7 +245,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         .post('/api/v1/encrypt/uint64')
         .send({
           value: '1000',
-          contractAddress: validContractAddress,
           userAddress: validUserAddress,
         })
         .expect(503)
@@ -285,12 +255,11 @@ describe('Encrypt Endpoints (e2e)', () => {
   });
 
   describe('POST /api/v1/encrypt/batch', () => {
-    describe('shared context flow', () => {
-      it('should encrypt multiple values with shared context', () => {
+    describe('batch encryption with userAddress', () => {
+      it('should encrypt multiple values with userAddress', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
-            contractAddress: validContractAddress,
             userAddress: validUserAddress,
             items: [
               { type: 'euint64', value: '1000000' },
@@ -310,7 +279,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
-            contractAddress: validContractAddress,
             userAddress: validUserAddress,
             items: [
               { type: 'euint64', value: '42' },
@@ -328,92 +296,30 @@ describe('Encrypt Endpoints (e2e)', () => {
       });
     });
 
-    describe('per-item context flow', () => {
-      it('should encrypt items with individual contexts', () => {
-        const otherContract = '0x9999999999999999999999999999999999999999';
-        const otherUser = '0x8888888888888888888888888888888888888888';
-
-        return request(app.getHttpServer())
-          .post('/api/v1/encrypt/batch')
-          .send({
-            items: [
-              {
-                type: 'euint64',
-                value: '500',
-                contractAddress: validContractAddress,
-                userAddress: validUserAddress,
-              },
-              {
-                type: 'ebool',
-                value: true,
-                contractAddress: otherContract,
-                userAddress: otherUser,
-              },
-            ],
-          })
-          .expect(200)
-          .expect((res: any) => {
-            expect(res.body.results).toHaveLength(2);
-          });
-      });
-    });
-
     describe('validation errors', () => {
-      // Note: For Fhenix CoFHE, contractAddress and userAddress are optional
-      // These tests verify that partial addresses work (Fhenix doesn't require them)
-
-      it('should accept batch with only contractAddress (Fhenix allows partial context)', () => {
-        return request(app.getHttpServer())
-          .post('/api/v1/encrypt/batch')
-          .send({
-            contractAddress: validContractAddress,
-            items: [{ type: 'euint64', value: '100' }],
-          })
-          .expect(200);
-      });
-
-      it('should accept batch with only userAddress (Fhenix allows partial context)', () => {
-        return request(app.getHttpServer())
-          .post('/api/v1/encrypt/batch')
-          .send({
-            userAddress: validUserAddress,
-            items: [{ type: 'euint64', value: '100' }],
-          })
-          .expect(200);
-      });
-
-      it('should accept batch with mixed shared and item-level context (Fhenix is flexible)', () => {
-        return request(app.getHttpServer())
-          .post('/api/v1/encrypt/batch')
-          .send({
-            contractAddress: validContractAddress,
-            userAddress: validUserAddress,
-            items: [
-              {
-                type: 'euint64',
-                value: '100',
-                contractAddress: '0x9999999999999999999999999999999999999999',
-                userAddress: '0x8888888888888888888888888888888888888888',
-              },
-            ],
-          })
-          .expect(200);
-      });
-
-      it('should accept batch without context (Fhenix allows no addresses)', () => {
+      it('should return 400 for missing userAddress', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
             items: [{ type: 'euint64', value: '100' }],
           })
-          .expect(200);
+          .expect(400);
+      });
+
+      it('should return 400 for invalid userAddress', () => {
+        return request(app.getHttpServer())
+          .post('/api/v1/encrypt/batch')
+          .send({
+            userAddress: 'invalid',
+            items: [{ type: 'euint64', value: '100' }],
+          })
+          .expect(400);
       });
 
       it('should return 400 for empty items array', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
-            contractAddress: validContractAddress,
             userAddress: validUserAddress,
             items: [],
           })
@@ -429,7 +335,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
-            contractAddress: validContractAddress,
             userAddress: validUserAddress,
             items,
           })
@@ -440,25 +345,8 @@ describe('Encrypt Endpoints (e2e)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
-            contractAddress: validContractAddress,
             userAddress: validUserAddress,
             items: [{ type: 'invalid', value: '100' }],
-          })
-          .expect(400);
-      });
-
-      it('should return 400 for invalid address format in item', () => {
-        return request(app.getHttpServer())
-          .post('/api/v1/encrypt/batch')
-          .send({
-            items: [
-              {
-                type: 'euint64',
-                value: '100',
-                contractAddress: 'invalid',
-                userAddress: validUserAddress,
-              },
-            ],
           })
           .expect(400);
       });
@@ -474,7 +362,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
-            contractAddress: validContractAddress,
             userAddress: validUserAddress,
             items: [
               { type: 'euint64', value: '100' },
@@ -493,7 +380,6 @@ describe('Encrypt Endpoints (e2e)', () => {
         return request(app.getHttpServer())
           .post('/api/v1/encrypt/batch')
           .send({
-            contractAddress: validContractAddress,
             userAddress: validUserAddress,
             items: [{ type: 'euint64', value: '42' }],
           })

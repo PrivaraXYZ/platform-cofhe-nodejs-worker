@@ -8,7 +8,6 @@ describe('BatchEncryptUseCase', () => {
   let useCase: BatchEncryptUseCase;
   let encryptUseCase: jest.Mocked<EncryptUseCase>;
 
-  const contractAddress = '0x1234567890123456789012345678901234567890';
   const userAddress = '0xabcdef0123456789abcdef0123456789abcdef01';
 
   const UTYPE_MAP: Record<EncryptionTypeDto, number> = {
@@ -44,8 +43,8 @@ describe('BatchEncryptUseCase', () => {
     encryptUseCase = module.get(EncryptUseCase);
   });
 
-  describe('no context flow (Fhenix)', () => {
-    it('should encrypt multiple items without context', async () => {
+  describe('batch encryption with userAddress', () => {
+    it('should encrypt multiple items with shared userAddress', async () => {
       encryptUseCase.execute
         .mockResolvedValueOnce({
           ok: true,
@@ -57,50 +56,6 @@ describe('BatchEncryptUseCase', () => {
         });
 
       const result = await useCase.execute({
-        items: [
-          { type: EncryptionTypeDto.UINT64, value: '1000000' },
-          { type: EncryptionTypeDto.BOOL, value: true },
-        ],
-      });
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value.results).toHaveLength(2);
-        expect(result.value.results[0].type).toBe(EncryptionTypeDto.UINT64);
-        expect(result.value.results[1].type).toBe(EncryptionTypeDto.BOOL);
-        expect(result.value.totalEncryptionTimeMs).toBeGreaterThanOrEqual(0);
-      }
-
-      expect(encryptUseCase.execute).toHaveBeenCalledTimes(2);
-      expect(encryptUseCase.execute).toHaveBeenNthCalledWith(1, {
-        type: EncryptionTypeDto.UINT64,
-        value: '1000000',
-        contractAddress: undefined,
-        userAddress: undefined,
-      });
-      expect(encryptUseCase.execute).toHaveBeenNthCalledWith(2, {
-        type: EncryptionTypeDto.BOOL,
-        value: true,
-        contractAddress: undefined,
-        userAddress: undefined,
-      });
-    });
-  });
-
-  describe('shared context flow', () => {
-    it('should encrypt multiple items with shared context', async () => {
-      encryptUseCase.execute
-        .mockResolvedValueOnce({
-          ok: true,
-          value: createMockEncryptOutput(EncryptionTypeDto.UINT64),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          value: createMockEncryptOutput(EncryptionTypeDto.BOOL),
-        });
-
-      const result = await useCase.execute({
-        contractAddress,
         userAddress,
         items: [
           { type: EncryptionTypeDto.UINT64, value: '1000000' },
@@ -120,182 +75,43 @@ describe('BatchEncryptUseCase', () => {
       expect(encryptUseCase.execute).toHaveBeenNthCalledWith(1, {
         type: EncryptionTypeDto.UINT64,
         value: '1000000',
-        contractAddress,
         userAddress,
       });
       expect(encryptUseCase.execute).toHaveBeenNthCalledWith(2, {
         type: EncryptionTypeDto.BOOL,
         value: true,
-        contractAddress,
         userAddress,
       });
     });
-  });
 
-  describe('per-item context flow', () => {
-    it('should encrypt items with individual contexts', async () => {
-      const otherContract = '0x9999999999999999999999999999999999999999';
-      const otherUser = '0x8888888888888888888888888888888888888888';
+    it('should encrypt all supported types', async () => {
+      const types = [
+        { type: EncryptionTypeDto.UINT8, value: 255 },
+        { type: EncryptionTypeDto.UINT16, value: 65535 },
+        { type: EncryptionTypeDto.UINT32, value: '4294967295' },
+        { type: EncryptionTypeDto.UINT64, value: '1000000' },
+        { type: EncryptionTypeDto.UINT128, value: '340282366920938463463374607431768211455' },
+        { type: EncryptionTypeDto.UINT256, value: '1000' },
+        { type: EncryptionTypeDto.ADDRESS, value: userAddress },
+        { type: EncryptionTypeDto.BOOL, value: true },
+      ];
 
-      encryptUseCase.execute
-        .mockResolvedValueOnce({
+      for (const { type } of types) {
+        encryptUseCase.execute.mockResolvedValueOnce({
           ok: true,
-          value: createMockEncryptOutput(EncryptionTypeDto.UINT64),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          value: {
-            ...createMockEncryptOutput(EncryptionTypeDto.ADDRESS),
-            contractAddress: otherContract,
-            userAddress: otherUser,
-          },
+          value: createMockEncryptOutput(type),
         });
+      }
 
       const result = await useCase.execute({
-        items: [
-          {
-            type: EncryptionTypeDto.UINT64,
-            value: '500',
-            contractAddress,
-            userAddress,
-          },
-          {
-            type: EncryptionTypeDto.ADDRESS,
-            value: otherUser,
-            contractAddress: otherContract,
-            userAddress: otherUser,
-          },
-        ],
+        userAddress,
+        items: types,
       });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.value.results).toHaveLength(2);
+        expect(result.value.results).toHaveLength(8);
       }
-
-      expect(encryptUseCase.execute).toHaveBeenNthCalledWith(1, {
-        type: EncryptionTypeDto.UINT64,
-        value: '500',
-        contractAddress,
-        userAddress,
-      });
-      expect(encryptUseCase.execute).toHaveBeenNthCalledWith(2, {
-        type: EncryptionTypeDto.ADDRESS,
-        value: otherUser,
-        contractAddress: otherContract,
-        userAddress: otherUser,
-      });
-    });
-  });
-
-  describe('partial context (Fhenix allows optional addresses)', () => {
-    it('should work when only contractAddress is provided at batch level', async () => {
-      encryptUseCase.execute.mockResolvedValueOnce({
-        ok: true,
-        value: createMockEncryptOutput(EncryptionTypeDto.UINT64),
-      });
-
-      const result = await useCase.execute({
-        contractAddress,
-        items: [{ type: EncryptionTypeDto.UINT64, value: '100' }],
-      });
-
-      expect(result.ok).toBe(true);
-      expect(encryptUseCase.execute).toHaveBeenCalledWith({
-        type: EncryptionTypeDto.UINT64,
-        value: '100',
-        contractAddress,
-        userAddress: undefined,
-      });
-    });
-
-    it('should work when only userAddress is provided at batch level', async () => {
-      encryptUseCase.execute.mockResolvedValueOnce({
-        ok: true,
-        value: createMockEncryptOutput(EncryptionTypeDto.UINT64),
-      });
-
-      const result = await useCase.execute({
-        userAddress,
-        items: [{ type: EncryptionTypeDto.UINT64, value: '100' }],
-      });
-
-      expect(result.ok).toBe(true);
-      expect(encryptUseCase.execute).toHaveBeenCalledWith({
-        type: EncryptionTypeDto.UINT64,
-        value: '100',
-        contractAddress: undefined,
-        userAddress,
-      });
-    });
-
-    it('should work when item has only contractAddress', async () => {
-      encryptUseCase.execute.mockResolvedValueOnce({
-        ok: true,
-        value: createMockEncryptOutput(EncryptionTypeDto.UINT64),
-      });
-
-      const result = await useCase.execute({
-        items: [
-          {
-            type: EncryptionTypeDto.UINT64,
-            value: '100',
-            contractAddress,
-          },
-        ],
-      });
-
-      expect(result.ok).toBe(true);
-    });
-
-    it('should work when item has only userAddress', async () => {
-      encryptUseCase.execute.mockResolvedValueOnce({
-        ok: true,
-        value: createMockEncryptOutput(EncryptionTypeDto.BOOL),
-      });
-
-      const result = await useCase.execute({
-        items: [
-          {
-            type: EncryptionTypeDto.BOOL,
-            value: true,
-            userAddress,
-          },
-        ],
-      });
-
-      expect(result.ok).toBe(true);
-    });
-
-    it('should allow mixing shared and item-level context (item overrides batch)', async () => {
-      const itemContract = '0x9999999999999999999999999999999999999999';
-      const itemUser = '0x8888888888888888888888888888888888888888';
-
-      encryptUseCase.execute.mockResolvedValueOnce({
-        ok: true,
-        value: createMockEncryptOutput(EncryptionTypeDto.UINT64),
-      });
-
-      const result = await useCase.execute({
-        contractAddress,
-        userAddress,
-        items: [
-          {
-            type: EncryptionTypeDto.UINT64,
-            value: '100',
-            contractAddress: itemContract,
-            userAddress: itemUser,
-          },
-        ],
-      });
-
-      expect(result.ok).toBe(true);
-      expect(encryptUseCase.execute).toHaveBeenCalledWith({
-        type: EncryptionTypeDto.UINT64,
-        value: '100',
-        contractAddress: itemContract,
-        userAddress: itemUser,
-      });
     });
   });
 
@@ -314,7 +130,6 @@ describe('BatchEncryptUseCase', () => {
         });
 
       const result = await useCase.execute({
-        contractAddress,
         userAddress,
         items: [
           { type: EncryptionTypeDto.UINT64, value: '100' },
@@ -339,7 +154,6 @@ describe('BatchEncryptUseCase', () => {
       });
 
       const result = await useCase.execute({
-        contractAddress,
         userAddress,
         items: [
           { type: EncryptionTypeDto.UINT64, value: '100' },
@@ -353,13 +167,14 @@ describe('BatchEncryptUseCase', () => {
   });
 
   describe('single item batch', () => {
-    it('should handle single item batch without context', async () => {
+    it('should handle single item batch', async () => {
       encryptUseCase.execute.mockResolvedValueOnce({
         ok: true,
         value: createMockEncryptOutput(EncryptionTypeDto.UINT64),
       });
 
       const result = await useCase.execute({
+        userAddress,
         items: [{ type: EncryptionTypeDto.UINT64, value: '42' }],
       });
 
@@ -368,22 +183,31 @@ describe('BatchEncryptUseCase', () => {
         expect(result.value.results).toHaveLength(1);
       }
     });
+  });
 
-    it('should handle single item batch with shared context', async () => {
-      encryptUseCase.execute.mockResolvedValueOnce({
-        ok: true,
-        value: createMockEncryptOutput(EncryptionTypeDto.UINT64),
-      });
+  describe('timing', () => {
+    it('should calculate total encryption time', async () => {
+      encryptUseCase.execute
+        .mockResolvedValueOnce({
+          ok: true,
+          value: { ...createMockEncryptOutput(EncryptionTypeDto.UINT64), encryptionTimeMs: 500 },
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          value: { ...createMockEncryptOutput(EncryptionTypeDto.BOOL), encryptionTimeMs: 300 },
+        });
 
       const result = await useCase.execute({
-        contractAddress,
         userAddress,
-        items: [{ type: EncryptionTypeDto.UINT64, value: '42' }],
+        items: [
+          { type: EncryptionTypeDto.UINT64, value: '100' },
+          { type: EncryptionTypeDto.BOOL, value: true },
+        ],
       });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.value.results).toHaveLength(1);
+        expect(result.value.totalEncryptionTimeMs).toBeGreaterThanOrEqual(0);
       }
     });
   });

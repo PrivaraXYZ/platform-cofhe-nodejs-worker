@@ -13,7 +13,6 @@ describe('EncryptUseCase', () => {
   let useCase: EncryptUseCase;
   let fheService: jest.Mocked<IFheService>;
 
-  const contractAddress = '0x1234567890123456789012345678901234567890';
   const userAddress = '0xabcdef0123456789abcdef0123456789abcdef01';
 
   beforeEach(async () => {
@@ -109,6 +108,7 @@ describe('EncryptUseCase', () => {
       const result = await useCase.execute({
         type: EncryptionTypeDto.UINT8,
         value: 255,
+        userAddress,
       });
 
       expect(result.ok).toBe(true);
@@ -119,7 +119,7 @@ describe('EncryptUseCase', () => {
         expect(result.value.encryptionTimeMs).toBe(1000);
       }
 
-      expect(fheService.encryptUint8).toHaveBeenCalledWith(255, undefined, undefined);
+      expect(fheService.encryptUint8).toHaveBeenCalledWith(255, userAddress);
     });
   });
 
@@ -131,6 +131,7 @@ describe('EncryptUseCase', () => {
       const result = await useCase.execute({
         type: EncryptionTypeDto.UINT16,
         value: 65535,
+        userAddress,
       });
 
       expect(result.ok).toBe(true);
@@ -138,7 +139,7 @@ describe('EncryptUseCase', () => {
         expect(result.value.type).toBe(EncryptionTypeDto.UINT16);
       }
 
-      expect(fheService.encryptUint16).toHaveBeenCalledWith(65535, undefined, undefined);
+      expect(fheService.encryptUint16).toHaveBeenCalledWith(65535, userAddress);
     });
   });
 
@@ -150,6 +151,7 @@ describe('EncryptUseCase', () => {
       const result = await useCase.execute({
         type: EncryptionTypeDto.UINT32,
         value: '4294967295',
+        userAddress,
       });
 
       expect(result.ok).toBe(true);
@@ -157,22 +159,19 @@ describe('EncryptUseCase', () => {
         expect(result.value.type).toBe(EncryptionTypeDto.UINT32);
       }
 
-      expect(fheService.encryptUint32).toHaveBeenCalledWith(
-        BigInt('4294967295'),
-        undefined,
-        undefined,
-      );
+      expect(fheService.encryptUint32).toHaveBeenCalledWith(BigInt('4294967295'), userAddress);
     });
   });
 
   describe('execute with uint64', () => {
-    it('should encrypt uint64 value successfully without addresses', async () => {
+    it('should encrypt uint64 value successfully with userAddress', async () => {
       const mockResult = createMockResult('uint64');
       fheService.encryptUint64.mockResolvedValue({ ok: true, value: mockResult });
 
       const result = await useCase.execute({
         type: EncryptionTypeDto.UINT64,
         value: '1000000',
+        userAddress,
       });
 
       expect(result.ok).toBe(true);
@@ -183,30 +182,7 @@ describe('EncryptUseCase', () => {
         expect(result.value.encryptionTimeMs).toBe(1000);
       }
 
-      expect(fheService.encryptUint64).toHaveBeenCalledWith(
-        BigInt('1000000'),
-        undefined,
-        undefined,
-      );
-    });
-
-    it('should encrypt uint64 value successfully with addresses', async () => {
-      const mockResult = createMockResult('uint64');
-      fheService.encryptUint64.mockResolvedValue({ ok: true, value: mockResult });
-
-      const result = await useCase.execute({
-        type: EncryptionTypeDto.UINT64,
-        value: '1000000',
-        contractAddress,
-        userAddress,
-      });
-
-      expect(result.ok).toBe(true);
-      expect(fheService.encryptUint64).toHaveBeenCalledWith(
-        BigInt('1000000'),
-        contractAddress,
-        userAddress,
-      );
+      expect(fheService.encryptUint64).toHaveBeenCalledWith(BigInt('1000000'), userAddress);
     });
   });
 
@@ -218,6 +194,7 @@ describe('EncryptUseCase', () => {
       const result = await useCase.execute({
         type: EncryptionTypeDto.UINT128,
         value: '340282366920938463463374607431768211455',
+        userAddress,
       });
 
       expect(result.ok).toBe(true);
@@ -227,8 +204,7 @@ describe('EncryptUseCase', () => {
 
       expect(fheService.encryptUint128).toHaveBeenCalledWith(
         BigInt('340282366920938463463374607431768211455'),
-        undefined,
-        undefined,
+        userAddress,
       );
     });
   });
@@ -241,6 +217,7 @@ describe('EncryptUseCase', () => {
       const result = await useCase.execute({
         type: EncryptionTypeDto.UINT256,
         value: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
+        userAddress,
       });
 
       expect(result.ok).toBe(true);
@@ -260,6 +237,7 @@ describe('EncryptUseCase', () => {
       const result = await useCase.execute({
         type: EncryptionTypeDto.ADDRESS,
         value: userAddress,
+        userAddress,
       });
 
       expect(result.ok).toBe(true);
@@ -267,7 +245,7 @@ describe('EncryptUseCase', () => {
         expect(result.value.type).toBe(EncryptionTypeDto.ADDRESS);
       }
 
-      expect(fheService.encryptAddress).toHaveBeenCalledWith(userAddress, undefined, undefined);
+      expect(fheService.encryptAddress).toHaveBeenCalledWith(userAddress, userAddress);
     });
   });
 
@@ -279,6 +257,7 @@ describe('EncryptUseCase', () => {
       const result = await useCase.execute({
         type: EncryptionTypeDto.BOOL,
         value: true,
+        userAddress,
       });
 
       expect(result.ok).toBe(true);
@@ -286,7 +265,7 @@ describe('EncryptUseCase', () => {
         expect(result.value.type).toBe(EncryptionTypeDto.BOOL);
       }
 
-      expect(fheService.encryptBool).toHaveBeenCalledWith(true, undefined, undefined);
+      expect(fheService.encryptBool).toHaveBeenCalledWith(true, userAddress);
     });
   });
 
@@ -298,6 +277,7 @@ describe('EncryptUseCase', () => {
       const result = await useCase.execute({
         type: EncryptionTypeDto.UINT64,
         value: '1000',
+        userAddress,
       });
 
       expect(result.ok).toBe(false);

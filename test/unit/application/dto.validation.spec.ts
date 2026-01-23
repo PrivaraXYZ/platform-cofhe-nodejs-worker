@@ -13,25 +13,13 @@ import { EncryptAddressRequestDto } from '@application/dto/encrypt-address-reque
 import { EncryptBoolRequestDto } from '@application/dto/encrypt-bool-request.dto';
 
 describe('DTO Validation', () => {
-  const validContractAddress = '0x1234567890123456789012345678901234567890';
   const validUserAddress = '0xabcdef0123456789abcdef0123456789abcdef01';
 
   describe('EncryptRequestDto', () => {
-    it('should pass validation for valid uint64 request without addresses', async () => {
+    it('should pass validation for valid uint64 request with userAddress', async () => {
       const dto = plainToInstance(EncryptRequestDto, {
         type: EncryptionTypeDto.UINT64,
         value: '1000000',
-      });
-
-      const errors = await validate(dto);
-      expect(errors.length).toBe(0);
-    });
-
-    it('should pass validation for valid uint64 request with addresses', async () => {
-      const dto = plainToInstance(EncryptRequestDto, {
-        type: EncryptionTypeDto.UINT64,
-        value: '1000000',
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
 
@@ -39,10 +27,22 @@ describe('DTO Validation', () => {
       expect(errors.length).toBe(0);
     });
 
+    it('should fail validation for request without userAddress', async () => {
+      const dto = plainToInstance(EncryptRequestDto, {
+        type: EncryptionTypeDto.UINT64,
+        value: '1000000',
+      });
+
+      const errors = await validate(dto);
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors.some((e) => e.property === 'userAddress')).toBe(true);
+    });
+
     it('should pass validation for valid address request', async () => {
       const dto = plainToInstance(EncryptRequestDto, {
         type: EncryptionTypeDto.ADDRESS,
         value: validUserAddress,
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -53,6 +53,7 @@ describe('DTO Validation', () => {
       const dto = plainToInstance(EncryptRequestDto, {
         type: EncryptionTypeDto.BOOL,
         value: true,
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -72,7 +73,11 @@ describe('DTO Validation', () => {
       ];
 
       for (const { type, value } of testCases) {
-        const dto = plainToInstance(EncryptRequestDto, { type, value });
+        const dto = plainToInstance(EncryptRequestDto, {
+          type,
+          value,
+          userAddress: validUserAddress,
+        });
 
         const errors = await validate(dto);
         expect(errors.length).toBe(0);
@@ -83,23 +88,12 @@ describe('DTO Validation', () => {
       const dto = plainToInstance(EncryptRequestDto, {
         type: 'invalid',
         value: '1000',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);
       expect(errors[0].property).toBe('type');
-    });
-
-    it('should fail validation for invalid contract address', async () => {
-      const dto = plainToInstance(EncryptRequestDto, {
-        type: EncryptionTypeDto.UINT64,
-        value: '1000',
-        contractAddress: 'invalid',
-      });
-
-      const errors = await validate(dto);
-      expect(errors.length).toBeGreaterThan(0);
-      expect(errors.some((e) => e.property === 'contractAddress')).toBe(true);
     });
 
     it('should fail validation for invalid user address', async () => {
@@ -116,19 +110,9 @@ describe('DTO Validation', () => {
   });
 
   describe('EncryptUint8RequestDto', () => {
-    it('should pass validation for valid request without addresses', async () => {
+    it('should pass validation for valid request with userAddress', async () => {
       const dto = plainToInstance(EncryptUint8RequestDto, {
         value: 255,
-      });
-
-      const errors = await validate(dto);
-      expect(errors.length).toBe(0);
-    });
-
-    it('should pass validation for valid request with addresses', async () => {
-      const dto = plainToInstance(EncryptUint8RequestDto, {
-        value: 100,
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
 
@@ -136,9 +120,20 @@ describe('DTO Validation', () => {
       expect(errors.length).toBe(0);
     });
 
+    it('should fail validation for request without userAddress', async () => {
+      const dto = plainToInstance(EncryptUint8RequestDto, {
+        value: 100,
+      });
+
+      const errors = await validate(dto);
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors.some((e) => e.property === 'userAddress')).toBe(true);
+    });
+
     it('should fail validation for value over 255', async () => {
       const dto = plainToInstance(EncryptUint8RequestDto, {
         value: 256,
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -148,6 +143,7 @@ describe('DTO Validation', () => {
     it('should fail validation for negative value', async () => {
       const dto = plainToInstance(EncryptUint8RequestDto, {
         value: -1,
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -159,6 +155,7 @@ describe('DTO Validation', () => {
     it('should pass validation for valid request', async () => {
       const dto = plainToInstance(EncryptUint16RequestDto, {
         value: 65535,
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -168,6 +165,7 @@ describe('DTO Validation', () => {
     it('should fail validation for value over 65535', async () => {
       const dto = plainToInstance(EncryptUint16RequestDto, {
         value: 65536,
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -179,6 +177,7 @@ describe('DTO Validation', () => {
     it('should pass validation for valid request', async () => {
       const dto = plainToInstance(EncryptUint32RequestDto, {
         value: '4294967295',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -188,6 +187,7 @@ describe('DTO Validation', () => {
     it('should fail validation for non-numeric value', async () => {
       const dto = plainToInstance(EncryptUint32RequestDto, {
         value: 'abc',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -196,19 +196,9 @@ describe('DTO Validation', () => {
   });
 
   describe('EncryptUint64RequestDto', () => {
-    it('should pass validation for valid request without addresses', async () => {
+    it('should pass validation for valid request with userAddress', async () => {
       const dto = plainToInstance(EncryptUint64RequestDto, {
         value: '1000000',
-      });
-
-      const errors = await validate(dto);
-      expect(errors.length).toBe(0);
-    });
-
-    it('should pass validation for valid request with addresses', async () => {
-      const dto = plainToInstance(EncryptUint64RequestDto, {
-        value: '1000000',
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
 
@@ -216,9 +206,20 @@ describe('DTO Validation', () => {
       expect(errors.length).toBe(0);
     });
 
+    it('should fail validation for request without userAddress', async () => {
+      const dto = plainToInstance(EncryptUint64RequestDto, {
+        value: '1000000',
+      });
+
+      const errors = await validate(dto);
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors.some((e) => e.property === 'userAddress')).toBe(true);
+    });
+
     it('should fail validation for non-numeric value', async () => {
       const dto = plainToInstance(EncryptUint64RequestDto, {
         value: 'abc',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -229,6 +230,7 @@ describe('DTO Validation', () => {
     it('should fail validation for empty value', async () => {
       const dto = plainToInstance(EncryptUint64RequestDto, {
         value: '',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -240,6 +242,7 @@ describe('DTO Validation', () => {
     it('should pass validation for valid request', async () => {
       const dto = plainToInstance(EncryptUint128RequestDto, {
         value: '340282366920938463463374607431768211455',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -249,6 +252,7 @@ describe('DTO Validation', () => {
     it('should fail validation for non-numeric value', async () => {
       const dto = plainToInstance(EncryptUint128RequestDto, {
         value: 'abc',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -260,6 +264,7 @@ describe('DTO Validation', () => {
     it('should pass validation for valid request', async () => {
       const dto = plainToInstance(EncryptUint256RequestDto, {
         value: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -269,6 +274,7 @@ describe('DTO Validation', () => {
     it('should fail validation for non-numeric value', async () => {
       const dto = plainToInstance(EncryptUint256RequestDto, {
         value: 'xyz',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -277,19 +283,9 @@ describe('DTO Validation', () => {
   });
 
   describe('EncryptAddressRequestDto', () => {
-    it('should pass validation for valid request without context addresses', async () => {
+    it('should pass validation for valid request with userAddress', async () => {
       const dto = plainToInstance(EncryptAddressRequestDto, {
         value: validUserAddress,
-      });
-
-      const errors = await validate(dto);
-      expect(errors.length).toBe(0);
-    });
-
-    it('should pass validation for valid request with context addresses', async () => {
-      const dto = plainToInstance(EncryptAddressRequestDto, {
-        value: validUserAddress,
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
 
@@ -297,9 +293,20 @@ describe('DTO Validation', () => {
       expect(errors.length).toBe(0);
     });
 
+    it('should fail validation for request without userAddress', async () => {
+      const dto = plainToInstance(EncryptAddressRequestDto, {
+        value: validUserAddress,
+      });
+
+      const errors = await validate(dto);
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors.some((e) => e.property === 'userAddress')).toBe(true);
+    });
+
     it('should fail validation for invalid value address', async () => {
       const dto = plainToInstance(EncryptAddressRequestDto, {
         value: 'invalid',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -309,9 +316,10 @@ describe('DTO Validation', () => {
   });
 
   describe('EncryptBoolRequestDto', () => {
-    it('should pass validation for true value without addresses', async () => {
+    it('should pass validation for true value with userAddress', async () => {
       const dto = plainToInstance(EncryptBoolRequestDto, {
         value: true,
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -321,6 +329,7 @@ describe('DTO Validation', () => {
     it('should pass validation for false value', async () => {
       const dto = plainToInstance(EncryptBoolRequestDto, {
         value: false,
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
@@ -330,6 +339,7 @@ describe('DTO Validation', () => {
     it('should fail validation for non-boolean value', async () => {
       const dto = plainToInstance(EncryptBoolRequestDto, {
         value: 'true',
+        userAddress: validUserAddress,
       });
 
       const errors = await validate(dto);
