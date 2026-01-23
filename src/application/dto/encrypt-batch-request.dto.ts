@@ -1,17 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsArray,
-  ValidateNested,
-  ArrayMinSize,
-  ArrayMaxSize,
-} from 'class-validator';
+import { IsEnum, IsArray, ValidateNested, ArrayMinSize, ArrayMaxSize } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  EncryptionTypeDto,
-  IsEthereumAddress,
-  IsValidEncryptValue,
-} from './encrypt-request.dto';
+import { EncryptionTypeDto, IsEthereumAddress, IsValidEncryptValue } from './encrypt-request.dto';
 
 export class BatchItemDto {
   @ApiProperty({

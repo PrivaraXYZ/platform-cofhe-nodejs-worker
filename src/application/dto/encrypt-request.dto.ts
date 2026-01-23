@@ -1,11 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsOptional,
-  registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
-} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 
 export const ETHEREUM_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
