@@ -11,7 +11,6 @@ describe('EncryptController', () => {
   let useCase: jest.Mocked<EncryptUseCase>;
   let batchUseCase: jest.Mocked<BatchEncryptUseCase>;
 
-  const validContractAddress = '0x1234567890123456789012345678901234567890';
   const validUserAddress = '0xabcdef0123456789abcdef0123456789abcdef01';
 
   const mockOutput: EncryptOutput = {
@@ -46,30 +45,12 @@ describe('EncryptController', () => {
   });
 
   describe('encrypt', () => {
-    it('should return encrypted value for valid request without addresses', async () => {
+    it('should return encrypted value for valid request with userAddress', async () => {
       useCase.execute.mockResolvedValue({ ok: true, value: mockOutput });
 
       const result = await controller.encrypt({
         type: EncryptionTypeDto.UINT64,
         value: '1000',
-      });
-
-      expect(result).toEqual(mockOutput);
-      expect(useCase.execute).toHaveBeenCalledWith({
-        type: EncryptionTypeDto.UINT64,
-        value: '1000',
-        contractAddress: undefined,
-        userAddress: undefined,
-      });
-    });
-
-    it('should return encrypted value for valid request with addresses', async () => {
-      useCase.execute.mockResolvedValue({ ok: true, value: mockOutput });
-
-      const result = await controller.encrypt({
-        type: EncryptionTypeDto.UINT64,
-        value: '1000',
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
 
@@ -77,7 +58,6 @@ describe('EncryptController', () => {
       expect(useCase.execute).toHaveBeenCalledWith({
         type: EncryptionTypeDto.UINT64,
         value: '1000',
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
     });
@@ -90,6 +70,7 @@ describe('EncryptController', () => {
         controller.encrypt({
           type: EncryptionTypeDto.UINT64,
           value: '1000',
+          userAddress: validUserAddress,
         }),
       ).rejects.toThrow(error);
     });
@@ -102,14 +83,14 @@ describe('EncryptController', () => {
 
       const result = await controller.encryptUint8({
         value: 255,
+        userAddress: validUserAddress,
       });
 
       expect(result.type).toBe(EncryptionTypeDto.UINT8);
       expect(useCase.execute).toHaveBeenCalledWith({
         type: EncryptionTypeDto.UINT8,
         value: 255,
-        contractAddress: undefined,
-        userAddress: undefined,
+        userAddress: validUserAddress,
       });
     });
   });
@@ -121,6 +102,7 @@ describe('EncryptController', () => {
 
       const result = await controller.encryptUint16({
         value: 65535,
+        userAddress: validUserAddress,
       });
 
       expect(result.type).toBe(EncryptionTypeDto.UINT16);
@@ -134,6 +116,7 @@ describe('EncryptController', () => {
 
       const result = await controller.encryptUint32({
         value: '4294967295',
+        userAddress: validUserAddress,
       });
 
       expect(result.type).toBe(EncryptionTypeDto.UINT32);
@@ -141,28 +124,11 @@ describe('EncryptController', () => {
   });
 
   describe('encryptUint64', () => {
-    it('should encrypt uint64 value without addresses', async () => {
+    it('should encrypt uint64 value with userAddress', async () => {
       useCase.execute.mockResolvedValue({ ok: true, value: mockOutput });
 
       const result = await controller.encryptUint64({
         value: '1000',
-      });
-
-      expect(result).toEqual(mockOutput);
-      expect(useCase.execute).toHaveBeenCalledWith({
-        type: EncryptionTypeDto.UINT64,
-        value: '1000',
-        contractAddress: undefined,
-        userAddress: undefined,
-      });
-    });
-
-    it('should encrypt uint64 value with addresses', async () => {
-      useCase.execute.mockResolvedValue({ ok: true, value: mockOutput });
-
-      const result = await controller.encryptUint64({
-        value: '1000',
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
 
@@ -170,7 +136,6 @@ describe('EncryptController', () => {
       expect(useCase.execute).toHaveBeenCalledWith({
         type: EncryptionTypeDto.UINT64,
         value: '1000',
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
     });
@@ -183,6 +148,7 @@ describe('EncryptController', () => {
 
       const result = await controller.encryptUint128({
         value: '340282366920938463463374607431768211455',
+        userAddress: validUserAddress,
       });
 
       expect(result.type).toBe(EncryptionTypeDto.UINT128);
@@ -196,6 +162,7 @@ describe('EncryptController', () => {
 
       const result = await controller.encryptUint256({
         value: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
+        userAddress: validUserAddress,
       });
 
       expect(result.type).toBe(EncryptionTypeDto.UINT256);
@@ -203,30 +170,12 @@ describe('EncryptController', () => {
   });
 
   describe('encryptAddress', () => {
-    it('should encrypt address value without context', async () => {
+    it('should encrypt address value with userAddress', async () => {
       const addressOutput = { ...mockOutput, type: EncryptionTypeDto.ADDRESS };
       useCase.execute.mockResolvedValue({ ok: true, value: addressOutput });
 
       const result = await controller.encryptAddress({
         value: validUserAddress,
-      });
-
-      expect(result.type).toBe(EncryptionTypeDto.ADDRESS);
-      expect(useCase.execute).toHaveBeenCalledWith({
-        type: EncryptionTypeDto.ADDRESS,
-        value: validUserAddress,
-        contractAddress: undefined,
-        userAddress: undefined,
-      });
-    });
-
-    it('should encrypt address value with context', async () => {
-      const addressOutput = { ...mockOutput, type: EncryptionTypeDto.ADDRESS };
-      useCase.execute.mockResolvedValue({ ok: true, value: addressOutput });
-
-      const result = await controller.encryptAddress({
-        value: validUserAddress,
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
 
@@ -234,33 +183,32 @@ describe('EncryptController', () => {
       expect(useCase.execute).toHaveBeenCalledWith({
         type: EncryptionTypeDto.ADDRESS,
         value: validUserAddress,
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
       });
     });
   });
 
   describe('encryptBool', () => {
-    it('should encrypt bool value without context', async () => {
+    it('should encrypt bool value with userAddress', async () => {
       const boolOutput = { ...mockOutput, type: EncryptionTypeDto.BOOL };
       useCase.execute.mockResolvedValue({ ok: true, value: boolOutput });
 
       const result = await controller.encryptBool({
         value: true,
+        userAddress: validUserAddress,
       });
 
       expect(result.type).toBe(EncryptionTypeDto.BOOL);
       expect(useCase.execute).toHaveBeenCalledWith({
         type: EncryptionTypeDto.BOOL,
         value: true,
-        contractAddress: undefined,
-        userAddress: undefined,
+        userAddress: validUserAddress,
       });
     });
   });
 
   describe('encryptBatch', () => {
-    it('should return batch results for valid request without addresses', async () => {
+    it('should return batch results for valid request with userAddress', async () => {
       const batchOutput = {
         results: [mockOutput, { ...mockOutput, type: EncryptionTypeDto.BOOL }],
         totalEncryptionTimeMs: 2000,
@@ -268,25 +216,6 @@ describe('EncryptController', () => {
       batchUseCase.execute.mockResolvedValue({ ok: true, value: batchOutput });
 
       const result = await controller.encryptBatch({
-        items: [
-          { type: EncryptionTypeDto.UINT64, value: '1000' },
-          { type: EncryptionTypeDto.BOOL, value: true },
-        ],
-      });
-
-      expect(result.results).toHaveLength(2);
-      expect(result.totalEncryptionTimeMs).toBe(2000);
-    });
-
-    it('should return batch results for valid request with addresses', async () => {
-      const batchOutput = {
-        results: [mockOutput, { ...mockOutput, type: EncryptionTypeDto.BOOL }],
-        totalEncryptionTimeMs: 2000,
-      };
-      batchUseCase.execute.mockResolvedValue({ ok: true, value: batchOutput });
-
-      const result = await controller.encryptBatch({
-        contractAddress: validContractAddress,
         userAddress: validUserAddress,
         items: [
           { type: EncryptionTypeDto.UINT64, value: '1000' },
@@ -304,7 +233,7 @@ describe('EncryptController', () => {
 
       await expect(
         controller.encryptBatch({
-          contractAddress: validContractAddress,
+          userAddress: validUserAddress,
           items: [{ type: EncryptionTypeDto.UINT64, value: '1000' }],
         }),
       ).rejects.toThrow(BadRequestException);
@@ -316,6 +245,7 @@ describe('EncryptController', () => {
 
       await expect(
         controller.encryptBatch({
+          userAddress: validUserAddress,
           items: [{ type: EncryptionTypeDto.UINT64, value: '1000' }],
         }),
       ).rejects.toThrow(error);
