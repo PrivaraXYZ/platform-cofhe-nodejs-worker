@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any */
 
-const cofheNode = require('cofhejs/node');
-const cofhejs = cofheNode.cofhejs;
-const Encryptable = cofheNode.Encryptable;
+const { createCofhesdkConfig, createCofhesdkClient } = require('@cofhe/sdk/node');
+const { Encryptable } = require('@cofhe/sdk');
+const { arbSepolia } = require('@cofhe/sdk/chains');
+const { Ethers6Adapter } = require('@cofhe/sdk/adapters');
 
-import { JsonRpcProvider } from 'ethers';
+import { JsonRpcProvider, AbstractSigner, type TransactionRequest, type Provider } from 'ethers';
 
 export interface EncryptTask {
   type:
@@ -49,41 +50,55 @@ interface CoFheInItem {
   signature: string;
 }
 
-let initialized = false;
+let client: any = null;
 let initPromise: Promise<void> | null = null;
 let currentConfig: WorkerConfig | null = null;
 let currentUserAddress: string | null = null;
 
-function createReadOnlySigner(address: string, ethersProvider: JsonRpcProvider) {
-  const provider = {
-    getChainId: async () => (await ethersProvider.getNetwork()).chainId.toString(),
-    call: async (tx: { to: string; data: string }) => await ethersProvider.call(tx),
-    send: async (method: string, params: unknown[]) => await ethersProvider.send(method, params),
-  };
+class ReadOnlySigner extends AbstractSigner {
+  private readonly _address: string;
 
-  return {
-    getAddress: async () => address,
-    signTypedData: async () => {
-      throw new Error('Read-only signer cannot sign typed data');
-    },
-    sendTransaction: async () => {
-      throw new Error('Read-only signer cannot send transactions');
-    },
-    provider,
-  };
+  constructor(address: string, provider: Provider) {
+    super(provider);
+    this._address = address;
+  }
+
+  async getAddress(): Promise<string> {
+    return this._address;
+  }
+
+  async signTransaction(_tx: TransactionRequest): Promise<string> {
+    throw new Error('Read-only signer cannot sign transactions');
+  }
+
+  async signMessage(_message: string | Uint8Array): Promise<string> {
+    throw new Error('Read-only signer cannot sign messages');
+  }
+
+  async signTypedData(
+    _domain: any,
+    _types: any,
+    _value: any,
+  ): Promise<string> {
+    throw new Error('Read-only signer cannot sign typed data');
+  }
+
+  connect(provider: Provider): ReadOnlySigner {
+    return new ReadOnlySigner(this._address, provider);
+  }
 }
 
 async function ensureInitialized(config: WorkerConfig, userAddress: string): Promise<void> {
   const configMatches = currentConfig?.rpcUrl === config.rpcUrl;
   const userMatches = currentUserAddress === userAddress.toLowerCase();
 
-  if (initialized && configMatches && userMatches) {
+  if (client && configMatches && userMatches) {
     return;
   }
 
   if (initPromise) {
     await initPromise;
-    if (initialized && configMatches && userMatches) {
+    if (client && configMatches && userMatches) {
       return;
     }
   }
@@ -96,25 +111,21 @@ async function doInitialize(config: WorkerConfig, userAddress: string): Promise<
   try {
     const provider = new JsonRpcProvider(config.rpcUrl);
     const normalizedUserAddress = userAddress.toLowerCase();
-    const readOnlySigner = createReadOnlySigner(normalizedUserAddress, provider);
+    const signer = new ReadOnlySigner(normalizedUserAddress, provider);
 
-    const result = await cofhejs.initializeWithEthers({
-      ethersProvider: provider,
-      ethersSigner: readOnlySigner,
-      environment: 'TESTNET',
-      generatePermit: false,
+    const sdkConfig = createCofhesdkConfig({
+      supportedChains: [arbSepolia],
     });
 
-    if (!result.success) {
-      const errorDetails =
-        result.error?.message || result.error?.toString() || JSON.stringify(result.error);
-      throw new Error(`CoFHE initialization failed: ${errorDetails}`);
-    }
+    client = createCofhesdkClient(sdkConfig);
 
-    initialized = true;
+    const { publicClient, walletClient } = await Ethers6Adapter(provider, signer);
+    await client.connect(publicClient, walletClient);
+
     currentConfig = config;
     currentUserAddress = normalizedUserAddress;
   } catch (error: any) {
+    client = null;
     initPromise = null;
     const errorMessage = error?.message || error?.toString() || JSON.stringify(error);
     throw new Error(`CoFHE initialization failed: ${errorMessage}`);
@@ -134,7 +145,7 @@ function createEncryptable(type: string, value: string | number | boolean): any 
     case 'euint128':
       return Encryptable.uint128(BigInt(value));
     case 'euint256':
-      return Encryptable.uint256(BigInt(value));
+      throw new Error('euint256 is not supported by @cofhe/sdk');
     case 'eaddress':
       return Encryptable.address(String(value));
     case 'ebool':
@@ -174,13 +185,13 @@ export async function encrypt(task: EncryptTask): Promise<EncryptResult> {
 
   const startTime = Date.now();
   const encryptable = createEncryptable(task.type, task.value);
-  const result = await cofhejs.encrypt([encryptable]);
+  const result = await client.encryptInputs([encryptable]).encrypt();
 
-  if (!result.success || !result.data || result.data.length === 0) {
-    throw new Error(`Encryption failed: ${result.error || 'no result returned'}`);
+  if (!result || result.length === 0) {
+    throw new Error('Encryption failed: no result returned');
   }
 
-  const [encrypted] = result.data;
+  const [encrypted] = result;
   return formatResult(task.type, encrypted as CoFheInItem, Date.now() - startTime);
 }
 
@@ -199,16 +210,16 @@ export async function encryptBatch(task: BatchEncryptTask): Promise<EncryptResul
 
   const startTime = Date.now();
   const encryptables = task.items.map((item) => createEncryptable(item.type, item.value));
-  const result = await cofhejs.encrypt(encryptables);
+  const result = await client.encryptInputs(encryptables).encrypt();
 
-  if (!result.success || !result.data) {
-    throw new Error(`Batch encryption failed: ${result.error || 'no result returned'}`);
+  if (!result) {
+    throw new Error('Batch encryption failed: no result returned');
   }
 
   const totalTime = Date.now() - startTime;
   const timePerItem = Math.round(totalTime / task.items.length);
 
-  return result.data.map((enc: CoFheInItem, index: number) =>
+  return result.map((enc: CoFheInItem, index: number) =>
     formatResult(task.items[index].type, enc, timePerItem),
   );
 }
