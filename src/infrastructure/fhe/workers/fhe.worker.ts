@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any */
 
-const { createCofhesdkConfig, createCofhesdkClient } = require('@cofhe/sdk/node');
+const { createCofheConfig, createCofheClient } = require('@cofhe/sdk/node');
 const { Encryptable } = require('@cofhe/sdk');
 const { arbSepolia } = require('@cofhe/sdk/chains');
 const { Ethers6Adapter } = require('@cofhe/sdk/adapters');
@@ -43,7 +43,7 @@ export interface EncryptResult {
   encryptionTimeMs: number;
 }
 
-interface CoFheInItem {
+interface EncryptedItemInput {
   ctHash: bigint;
   securityZone: number;
   utype: number;
@@ -113,11 +113,11 @@ async function doInitialize(config: WorkerConfig, userAddress: string): Promise<
     const normalizedUserAddress = userAddress.toLowerCase();
     const signer = new ReadOnlySigner(normalizedUserAddress, provider);
 
-    const sdkConfig = createCofhesdkConfig({
+    const sdkConfig = createCofheConfig({
       supportedChains: [arbSepolia],
     });
 
-    client = createCofhesdkClient(sdkConfig);
+    client = createCofheClient(sdkConfig);
 
     const { publicClient, walletClient } = await Ethers6Adapter(provider, signer);
     await client.connect(publicClient, walletClient);
@@ -157,7 +157,7 @@ function createEncryptable(type: string, value: string | number | boolean): any 
 
 function formatResult(
   type: string,
-  encrypted: CoFheInItem,
+  encrypted: EncryptedItemInput,
   encryptionTimeMs: number,
 ): EncryptResult {
   return {
@@ -185,14 +185,14 @@ export async function encrypt(task: EncryptTask): Promise<EncryptResult> {
 
   const startTime = Date.now();
   const encryptable = createEncryptable(task.type, task.value);
-  const result = await client.encryptInputs([encryptable]).encrypt();
+  const result = await client.encryptInputs([encryptable]).execute();
 
   if (!result || result.length === 0) {
     throw new Error('Encryption failed: no result returned');
   }
 
   const [encrypted] = result;
-  return formatResult(task.type, encrypted as CoFheInItem, Date.now() - startTime);
+  return formatResult(task.type, encrypted as EncryptedItemInput, Date.now() - startTime);
 }
 
 export async function encryptBatch(task: BatchEncryptTask): Promise<EncryptResult[]> {
@@ -210,7 +210,7 @@ export async function encryptBatch(task: BatchEncryptTask): Promise<EncryptResul
 
   const startTime = Date.now();
   const encryptables = task.items.map((item) => createEncryptable(item.type, item.value));
-  const result = await client.encryptInputs(encryptables).encrypt();
+  const result = await client.encryptInputs(encryptables).execute();
 
   if (!result) {
     throw new Error('Batch encryption failed: no result returned');
@@ -219,7 +219,7 @@ export async function encryptBatch(task: BatchEncryptTask): Promise<EncryptResul
   const totalTime = Date.now() - startTime;
   const timePerItem = Math.round(totalTime / task.items.length);
 
-  return result.map((enc: CoFheInItem, index: number) =>
+  return result.map((enc: EncryptedItemInput, index: number) =>
     formatResult(task.items[index].type, enc, timePerItem),
   );
 }
